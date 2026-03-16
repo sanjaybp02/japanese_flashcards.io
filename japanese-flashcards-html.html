@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Japanese Flashcards – Hiragana & Katakana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 48px;
+      background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+      transition: background 0.5s ease;
+    }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { color: #fff; font-size: 2rem; font-weight: 700; letter-spacing: 0.05em; text-shadow: 0 2px 8px rgba(0,0,0,.25); }
+    .header p  { color: rgba(255,255,255,.65); font-size: .875rem; margin-top: 4px; }
+
+    /* ── Script tabs ── */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab-btn {
+      padding: 8px 20px; border-radius: 999px; border: none; cursor: pointer;
+      font-size: .85rem; font-weight: 600; font-family: inherit;
+      background: rgba(255,255,255,.2); color: #fff;
+      transition: background .2s, color .2s, transform .15s;
+    }
+    .tab-btn.active { background: #fff; transform: scale(1.05); }
+
+    /* ── Progress ── */
+    .progress-wrap { width: 100%; max-width: 440px; margin-bottom: 16px; }
+    .progress-labels { display: flex; justify-content: space-between; color: rgba(255,255,255,.75); font-size: .75rem; margin-bottom: 4px; }
+    .bar-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; margin-bottom: 3px; }
+    .bar-fill  { height: 100%; border-radius: 999px; background: #fff; transition: width .3s; }
+    .bar-known-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
+    .bar-known-fill  { height: 100%; border-radius: 999px; background: #2ecc71; transition: width .3s; }
+
+    /* ── Card wrapper (perspective) ── */
+    .card-scene {
+      width: 100%; max-width: 440px;
+      height: 280px;
+      perspective: 1000px;
+      cursor: pointer;
+      margin-bottom: 24px;
+    }
+    .card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .5s ease, opacity .18s ease;
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+    .card-inner.animating { opacity: 0; }
+
+    .card-face {
+      position: absolute; inset: 0;
+      background: #fff; border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      backface-visibility: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .card-back { transform: rotateY(180deg); }
+
+    .card-badge {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; padding: 4px 12px; border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    .card-char {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 7rem; line-height: 1; color: #1a1a2e;
+    }
+    .card-hint { color: #aaa; font-size: .85rem; margin-top: 16px; }
+    .known-check { position: absolute; top: 16px; right: 18px; font-size: 1.5rem; }
+
+    /* back face */
+    .back-char { font-family: 'Noto Sans JP', sans-serif; font-size: 4.5rem; line-height: 1; color: #1a1a2e; }
+    .romaji-pill {
+      margin-top: 14px; padding: 8px 28px; border-radius: 999px;
+      color: #fff; font-size: 1.6rem; font-weight: 700; letter-spacing: .12em;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .romaji-label { color: #777; font-size: .85rem; margin-top: 10px; }
+
+    /* ── Nav controls ── */
+    .controls { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .nav-btn {
+      width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+      font-size: 1.25rem; font-weight: 700; font-family: inherit;
+      background: rgba(255,255,255,.9); transition: opacity .2s, background .2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .nav-btn:disabled { background: rgba(255,255,255,.2); color: rgba(255,255,255,.4); cursor: default; box-shadow: none; }
+    .mark-btn {
+      padding: 8px 20px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4);
+      background: rgba(255,255,255,.2); color: #fff; font-size: .875rem;
+      font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s;
+    }
+    .mark-btn.known { background: #2ecc71; border-color: #27ae60; }
+
+    /* ── Secondary controls ── */
+    .secondary { display: flex; gap: 12px; margin-bottom: 20px; }
+    .sec-btn {
+      padding: 6px 18px; border-radius: 999px; border: none; cursor: pointer;
+      background: rgba(255,255,255,.2); color: #fff; font-size: .8rem;
+      font-weight: 600; font-family: inherit; transition: background .2s, color .2s;
+    }
+    .sec-btn.on { background: rgba(255,255,255,.9); }
+
+    .kbd-hint { color: rgba(255,255,255,.45); font-size: .72rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .header h1 { font-size: 1.5rem; }
+      .card-char  { font-size: 5.5rem; }
+      .back-char  { font-size: 3.5rem; }
+      .romaji-pill { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>日本語 Flash Cards</h1>
+    <p>Learn Japanese from scratch</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-script="hiragana">ひ Hiragana</button>
+    <button class="tab-btn"        data-script="katakana">カ Katakana</button>
+    <button class="tab-btn"        data-script="both">両 Both</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="pos-label">1 / 46</span>
+      <span id="known-label">✓ 0 known (0%)</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="pos-bar" style="width:2%"></div></div>
+    <div class="bar-known-track"><div class="bar-known-fill" id="known-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="card-scene" id="card-scene">
+    <div class="card-inner" id="card-inner">
+      <!-- front -->
+      <div class="card-face card-front">
+        <div class="card-badge" id="front-badge"></div>
+        <div class="card-char"  id="front-char"></div>
+        <div class="card-hint">Tap or press Space to reveal</div>
+        <div class="known-check" id="front-check" style="display:none">✅</div>
+      </div>
+      <!-- back -->
+      <div class="card-face card-back">
+        <div class="card-badge" id="back-badge">Pronunciation</div>
+        <div class="back-char"  id="back-char"></div>
+        <div class="romaji-pill" id="romaji-pill"></div>
+        <div class="romaji-label" id="romaji-label"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="nav-btn" id="prev-btn" disabled>←</button>
+    <button class="mark-btn" id="mark-btn">Mark Known</button>
+    <button class="nav-btn" id="next-btn">→</button>
+  </div>
+
+  <div class="secondary">
+    <button class="sec-btn" id="shuffle-btn">🔀 Shuffle</button>
+    <button class="sec-btn" id="reset-btn">↺ Reset</button>
+  </div>
+
+  <div class="kbd-hint">← → Navigate &nbsp;·&nbsp; Space / ↑↓ Flip</div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+const H = [
+  {c:"あ",r:"a",g:"Vowels"},{c:"い",r:"i",g:"Vowels"},{c:"う",r:"u",g:"Vowels"},{c:"え",r:"e",g:"Vowels"},{c:"お",r:"o",g:"Vowels"},
+  {c:"か",r:"ka",g:"K"},{c:"き",r:"ki",g:"K"},{c:"く",r:"ku",g:"K"},{c:"け",r:"ke",g:"K"},{c:"こ",r:"ko",g:"K"},
+  {c:"さ",r:"sa",g:"S"},{c:"し",r:"shi",g:"S"},{c:"す",r:"su",g:"S"},{c:"せ",r:"se",g:"S"},{c:"そ",r:"so",g:"S"},
+  {c:"た",r:"ta",g:"T"},{c:"ち",r:"chi",g:"T"},{c:"つ",r:"tsu",g:"T"},{c:"て",r:"te",g:"T"},{c:"と",r:"to",g:"T"},
+  {c:"な",r:"na",g:"N"},{c:"に",r:"ni",g:"N"},{c:"ぬ",r:"nu",g:"N"},{c:"ね",r:"ne",g:"N"},{c:"の",r:"no",g:"N"},
+  {c:"は",r:"ha",g:"H"},{c:"ひ",r:"hi",g:"H"},{c:"ふ",r:"fu",g:"H"},{c:"へ",r:"he",g:"H"},{c:"ほ",r:"ho",g:"H"},
+  {c:"ま",r:"ma",g:"M"},{c:"み",r:"mi",g:"M"},{c:"む",r:"mu",g:"M"},{c:"め",r:"me",g:"M"},{c:"も",r:"mo",g:"M"},
+  {c:"や",r:"ya",g:"Y"},{c:"ゆ",r:"yu",g:"Y"},{c:"よ",r:"yo",g:"Y"},
+  {c:"ら",r:"ra",g:"R"},{c:"り",r:"ri",g:"R"},{c:"る",r:"ru",g:"R"},{c:"れ",r:"re",g:"R"},{c:"ろ",r:"ro",g:"R"},
+  {c:"わ",r:"wa",g:"W"},{c:"を",r:"wo",g:"W"},{c:"ん",r:"n",g:"N (solo)"}
+];
+const K = [
+  {c:"ア",r:"a",g:"Vowels"},{c:"イ",r:"i",g:"Vowels"},{c:"ウ",r:"u",g:"Vowels"},{c:"エ",r:"e",g:"Vowels"},{c:"オ",r:"o",g:"Vowels"},
+  {c:"カ",r:"ka",g:"K"},{c:"キ",r:"ki",g:"K"},{c:"ク",r:"ku",g:"K"},{c:"ケ",r:"ke",g:"K"},{c:"コ",r:"ko",g:"K"},
+  {c:"サ",r:"sa",g:"S"},{c:"シ",r:"shi",g:"S"},{c:"ス",r:"su",g:"S"},{c:"セ",r:"se",g:"S"},{c:"ソ",r:"so",g:"S"},
+  {c:"タ",r:"ta",g:"T"},{c:"チ",r:"chi",g:"T"},{c:"ツ",r:"tsu",g:"T"},{c:"テ",r:"te",g:"T"},{c:"ト",r:"to",g:"T"},
+  {c:"ナ",r:"na",g:"N"},{c:"ニ",r:"ni",g:"N"},{c:"ヌ",r:"nu",g:"N"},{c:"ネ",r:"ne",g:"N"},{c:"ノ",r:"no",g:"N"},
+  {c:"ハ",r:"ha",g:"H"},{c:"ヒ",r:"hi",g:"H"},{c:"フ",r:"fu",g:"H"},{c:"ヘ",r:"he",g:"H"},{c:"ホ",r:"ho",g:"H"},
+  {c:"マ",r:"ma",g:"M"},{c:"ミ",r:"mi",g:"M"},{c:"ム",r:"mu",g:"M"},{c:"メ",r:"me",g:"M"},{c:"モ",r:"mo",g:"M"},
+  {c:"ヤ",r:"ya",g:"Y"},{c:"ユ",r:"yu",g:"Y"},{c:"ヨ",r:"yo",g:"Y"},
+  {c:"ラ",r:"ra",g:"R"},{c:"リ",r:"ri",g:"R"},{c:"ル",r:"ru",g:"R"},{c:"レ",r:"re",g:"R"},{c:"ロ",r:"ro",g:"R"},
+  {c:"ワ",r:"wa",g:"W"},{c:"ヲ",r:"wo",g:"W"},{c:"ン",r:"n",g:"N (solo)"}
+];
+
+const COLORS = {
+  hiragana: { bg:"#c0392b", light:"#e74c3c" },
+  katakana: { bg:"#1a5276", light:"#2980b9" },
+  both:     { bg:"#6c3483", light:"#8e44ad" }
+};
+
+// ─── State ──────────────────────────────────────────────────────────────────
+let script   = "hiragana";
+let deck     = [...H];
+let idx      = 0;
+let flipped  = false;
+let shuffled = false;
+let known    = new Set();
+let animating = false;
+
+// ─── DOM refs ────────────────────────────────────────────────────────────────
+const body       = document.body;
+const cardInner  = document.getElementById("card-inner");
+const frontBadge = document.getElementById("front-badge");
+const frontChar  = document.getElementById("front-char");
+const frontCheck = document.getElementById("front-check");
+const backChar   = document.getElementById("back-char");
+const romajiPill = document.getElementById("romaji-pill");
+const romajiLbl  = document.getElementById("romaji-label");
+const posLbl     = document.getElementById("pos-label");
+const knownLbl   = document.getElementById("known-label");
+const posBar     = document.getElementById("pos-bar");
+const knownBar   = document.getElementById("known-bar");
+const prevBtn    = document.getElementById("prev-btn");
+const nextBtn    = document.getElementById("next-btn");
+const markBtn    = document.getElementById("mark-btn");
+const shuffleBtn = document.getElementById("shuffle-btn");
+const resetBtn   = document.getElementById("reset-btn");
+const tabBtns    = document.querySelectorAll(".tab-btn");
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function buildDeck(s, sh) {
+  const base = s === "hiragana" ? [...H] : s === "katakana" ? [...K] : [...H, ...K];
+  return sh ? shuffle(base) : base;
+}
+function isHiragana(ch) { return H.some(x => x.c === ch); }
+function scriptLabel(ch) {
+  if (script !== "both") return script.charAt(0).toUpperCase() + script.slice(1);
+  return isHiragana(ch) ? "Hiragana" : "Katakana";
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  const card = deck[idx];
+  const col  = COLORS[script];
+
+  // body gradient
+  body.style.background = `linear-gradient(135deg, ${col.bg} 0%, ${col.light} 100%)`;
+
+  // badge colour
+  const badgeStyle = `background:${col.bg}20; color:${col.bg}`;
+  frontBadge.style.cssText = badgeStyle;
+  frontBadge.textContent = `${card.g} row · ${scriptLabel(card.c)}`;
+
+  // front
+  frontChar.textContent = card.c;
+  frontCheck.style.display = known.has(idx) ? "block" : "none";
+
+  // back
+  backChar.textContent  = card.c;
+  romajiPill.textContent = card.r.toUpperCase();
+  romajiPill.style.background = col.bg;
+  romajiLbl.textContent = `Romanization: ${card.r}`;
+
+  // flip state
+  cardInner.classList.toggle("flipped", flipped);
+
+  // nav buttons — color the active ones
+  prevBtn.style.color = col.bg;
+  nextBtn.style.color = col.bg;
+  prevBtn.disabled = idx === 0;
+  nextBtn.disabled = idx === deck.length - 1;
+
+  // mark button
+  markBtn.classList.toggle("known", known.has(idx));
+  markBtn.textContent = known.has(idx) ? "✓ Known" : "Mark Known";
+
+  // progress
+  const pct   = Math.round(((idx + 1) / deck.length) * 100);
+  const kPct  = Math.round((known.size / deck.length) * 100);
+  posLbl.textContent   = `${idx + 1} / ${deck.length}`;
+  knownLbl.textContent = `✓ ${known.size} known (${kPct}%)`;
+  posBar.style.width   = pct + "%";
+  knownBar.style.width = kPct + "%";
+
+  // tab active state & color
+  tabBtns.forEach(b => {
+    const isActive = b.dataset.script === script;
+    b.classList.toggle("active", isActive);
+    b.style.color = isActive ? col.bg : "";
+  });
+
+  // shuffle button
+  shuffleBtn.classList.toggle("on", shuffled);
+  shuffleBtn.style.color = shuffled ? col.bg : "";
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function goTo(dir) {
+  if (animating) return;
+  const next = idx + dir;
+  if (next < 0 || next >= deck.length) return;
+  animating = true;
+  cardInner.classList.add("animating");
+  setTimeout(() => {
+    flipped = false;
+    idx = next;
+    render();
+    cardInner.classList.remove("animating");
+    setTimeout(() => { animating = false; }, 50);
+  }, 180);
+}
+
+// ─── Event listeners ─────────────────────────────────────────────────────────
+document.getElementById("card-scene").addEventListener("click", () => {
+  flipped = !flipped; render();
+});
+prevBtn.addEventListener("click", () => goTo(-1));
+nextBtn.addEventListener("click", () => goTo(1));
+
+markBtn.addEventListener("click", () => {
+  if (known.has(idx)) known.delete(idx); else known.add(idx);
+  render();
+});
+
+shuffleBtn.addEventListener("click", () => {
+  shuffled = !shuffled;
+  deck = buildDeck(script, shuffled);
+  idx = 0; flipped = false;
+  render();
+});
+
+resetBtn.addEventListener("click", () => {
+  idx = 0; flipped = false; known = new Set();
+  deck = buildDeck(script, shuffled);
+  render();
+});
+
+tabBtns.forEach(b => b.addEventListener("click", () => {
+  script = b.dataset.script;
+  deck   = buildDeck(script, shuffled);
+  idx = 0; flipped = false; known = new Set();
+  render();
+}));
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") goTo(1);
+  if (e.key === "ArrowLeft")  goTo(-1);
+  if (e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") {
+    e.preventDefault(); flipped = !flipped; render();
+  }
+});
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
