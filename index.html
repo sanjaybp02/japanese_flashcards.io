@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#c0392b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Japanese Flashcards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overscroll-behavior: none; }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: max(env(safe-area-inset-top),20px) 16px env(safe-area-inset-bottom,20px);
+      background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+      transition: background 0.5s ease;
+    }
+
+    /* ── Auth bar ── */
+    .auth-bar {
+      width: 100%; max-width: 440px;
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 10px; margin-bottom: 10px; min-height: 36px;
+    }
+    .auth-bar .user-info {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .auth-bar img.avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.6);
+    }
+    .auth-bar .user-name {
+      color: rgba(255,255,255,.85); font-size: .78rem; font-weight: 600;
+      max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .auth-btn {
+      padding: 6px 14px; border-radius: 999px; border: 2px solid rgba(255,255,255,.5);
+      background: rgba(255,255,255,.15); color: #fff; font-size: .75rem;
+      font-weight: 700; font-family: inherit; cursor: pointer;
+      transition: background .2s; min-height: 34px; touch-action: manipulation;
+    }
+    .auth-btn:hover { background: rgba(255,255,255,.3); }
+    .sync-status {
+      font-size: .68rem; color: rgba(255,255,255,.55); display: flex; align-items: center; gap: 4px;
+    }
+    .sync-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #2ecc71;
+      animation: pulse 2s infinite;
+    }
+    .sync-dot.offline { background: #e67e22; animation: none; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 16px; }
+    .header h1 { color: #fff; font-size: clamp(1.4rem,5vw,2rem); font-weight: 700; letter-spacing:.05em; text-shadow:0 2px 8px rgba(0,0,0,.25); }
+    .header p  { color: rgba(255,255,255,.6); font-size: .78rem; margin-top: 3px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab-btn {
+      padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+      font-size: .85rem; font-weight: 600; font-family: inherit;
+      background: rgba(255,255,255,.2); color: #fff;
+      transition: background .2s, transform .15s; touch-action: manipulation; min-height: 44px;
+    }
+    .tab-btn.active { background: #fff; transform: scale(1.05); }
+
+    /* ── Progress ── */
+    .progress-wrap { width: 100%; max-width: 440px; margin-bottom: 14px; }
+    .progress-labels { display: flex; justify-content: space-between; color: rgba(255,255,255,.75); font-size: .73rem; margin-bottom: 4px; }
+    .bar-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; margin-bottom: 3px; }
+    .bar-fill  { height: 100%; border-radius: 999px; background: #fff; transition: width .3s; }
+    .bar-known-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
+    .bar-known-fill  { height: 100%; border-radius: 999px; background: #2ecc71; transition: width .3s; }
+
+    /* ── Card ── */
+    .card-scene {
+      width: 100%; max-width: 440px;
+      height: clamp(220px,40vw,280px);
+      perspective: 1000px; cursor: pointer; margin-bottom: 16px;
+      touch-action: manipulation; user-select: none;
+    }
+    .card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .5s ease, opacity .18s ease;
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+    .card-inner.animating { opacity: 0; }
+    .card-face {
+      position: absolute; inset: 0; background: #fff; border-radius: 24px;
+      box-shadow: 0 16px 48px rgba(0,0,0,.22);
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+    }
+    .card-back { transform: rotateY(180deg); }
+    .card-badge {
+      font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+    }
+    .card-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(5rem,16vw,7rem); line-height:1; color:#1a1a2e; }
+    .card-hint { color: #bbb; font-size: .78rem; margin-top: 12px; }
+    .known-check { position: absolute; top: 14px; right: 16px; font-size: 1.4rem; }
+    .back-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(3rem,10vw,4.5rem); line-height:1; color:#1a1a2e; }
+    .romaji-pill {
+      margin-top: 12px; padding: 8px 28px; border-radius: 999px;
+      color: #fff; font-size: clamp(1.2rem,5vw,1.6rem); font-weight: 700; letter-spacing: .12em;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    }
+    .romaji-label { color: #888; font-size: .8rem; margin-top: 8px; }
+
+    .swipe-hint { color: rgba(255,255,255,.45); font-size: .72rem; margin-bottom: 10px; display: none; }
+    @media (hover:none) { .swipe-hint { display: block; } }
+
+    /* ── Controls ── */
+    .controls { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .nav-btn {
+      width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+      font-size: 1.3rem; font-weight: 700; font-family: inherit;
+      background: rgba(255,255,255,.9); transition: opacity .2s, transform .1s;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15); touch-action: manipulation;
+    }
+    .nav-btn:active:not(:disabled) { transform: scale(0.93); }
+    .nav-btn:disabled { background: rgba(255,255,255,.2); color: rgba(255,255,255,.4); cursor: default; box-shadow: none; }
+    .mark-btn {
+      padding: 12px 22px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4);
+      background: rgba(255,255,255,.2); color: #fff; font-size: .875rem;
+      font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s;
+      touch-action: manipulation; min-height: 48px;
+    }
+    .mark-btn.known { background: #2ecc71; border-color: #27ae60; }
+    .mark-btn:active { transform: scale(0.96); }
+    .mark-btn:disabled { opacity: .5; cursor: default; }
+
+    .secondary { display: flex; gap: 10px; margin-bottom: 14px; }
+    .sec-btn {
+      padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
+      background: rgba(255,255,255,.2); color: #fff; font-size: .8rem;
+      font-weight: 600; font-family: inherit; transition: background .2s;
+      touch-action: manipulation; min-height: 44px;
+    }
+    .sec-btn.on { background: rgba(255,255,255,.9); }
+    .sec-btn:active { transform: scale(0.95); }
+
+    .kbd-hint { color: rgba(255,255,255,.4); font-size: .68rem; display: none; }
+    @media (hover:hover) { .kbd-hint { display: block; } }
+
+    /* ── Login prompt overlay ── */
+    .login-prompt {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; padding: 24px;
+      opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    .login-prompt.visible { opacity: 1; pointer-events: all; }
+    .login-box {
+      background: #fff; border-radius: 24px; padding: 32px 28px;
+      max-width: 360px; width: 100%; text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,.3);
+    }
+    .login-box .lp-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .login-box h2 { font-size: 1.2rem; color: #1a1a2e; margin-bottom: 8px; }
+    .login-box p  { font-size: .85rem; color: #666; margin-bottom: 24px; line-height: 1.5; }
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 13px 20px; border-radius: 999px;
+      background: #fff; border: 2px solid #ddd; cursor: pointer;
+      font-size: .95rem; font-weight: 600; font-family: inherit; color: #333;
+      transition: box-shadow .2s, background .2s; touch-action: manipulation;
+    }
+    .google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); background: #f9f9f9; }
+    .google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .lp-skip {
+      margin-top: 14px; background: none; border: none; color: #aaa;
+      font-size: .8rem; cursor: pointer; font-family: inherit; text-decoration: underline;
+    }
+
+    @media (max-height:500px) and (orientation:landscape) {
+      body { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0 24px; padding: 10px 16px; }
+      .header { width: 100%; margin-bottom: 6px; }
+      .auth-bar, .tabs { margin-bottom: 6px; }
+      .card-scene { height: 160px; margin-bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth bar -->
+  <div class="auth-bar" id="auth-bar">
+    <div id="auth-loading" class="sync-status">Loading...</div>
+  </div>
+
+  <div class="header">
+    <h1>日本語 Flash Cards</h1>
+    <p>Learn Japanese from scratch</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-script="hiragana">ひ Hiragana</button>
+    <button class="tab-btn"        data-script="katakana">カ Katakana</button>
+    <button class="tab-btn"        data-script="both">両 Both</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="pos-label">1 / 46</span>
+      <span id="known-label">✓ 0 known (0%)</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="pos-bar" style="width:2%"></div></div>
+    <div class="bar-known-track"><div class="bar-known-fill" id="known-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="card-scene" id="card-scene">
+    <div class="card-inner" id="card-inner">
+      <div class="card-face card-front">
+        <div class="card-badge" id="front-badge"></div>
+        <div class="card-char"  id="front-char"></div>
+        <div class="card-hint">Tap to reveal pronunciation</div>
+        <div class="known-check" id="front-check" style="display:none">✅</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-badge">Pronunciation</div>
+        <div class="back-char"  id="back-char"></div>
+        <div class="romaji-pill" id="romaji-pill"></div>
+        <div class="romaji-label" id="romaji-label"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swipe-hint">← Swipe left / right to navigate →</div>
+
+  <div class="controls">
+    <button class="nav-btn" id="prev-btn" disabled>←</button>
+    <button class="mark-btn" id="mark-btn">Mark Known</button>
+    <button class="nav-btn" id="next-btn">→</button>
+  </div>
+
+  <div class="secondary">
+    <button class="sec-btn" id="shuffle-btn">🔀 Shuffle</button>
+    <button class="sec-btn" id="reset-btn">↺ Reset</button>
+  </div>
+
+  <div class="kbd-hint">← → Navigate &nbsp;·&nbsp; Space / ↑↓ Flip</div>
+
+  <!-- Login prompt -->
+  <div class="login-prompt" id="login-prompt">
+    <div class="login-box">
+      <div class="lp-icon">🔐</div>
+      <h2>Save your progress</h2>
+      <p>Sign in to sync your "Known" cards across all your devices automatically.</p>
+      <button class="google-btn" id="google-login-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+      <button class="lp-skip" id="lp-skip-btn">Skip for now (no sync)</button>
+    </div>
+  </div>
+
+<script type="module">
+// ══════════════════════════════════════════════════════════════════
+//  🔧 PASTE YOUR FIREBASE CONFIG HERE (replace all values)
+// ══════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyAmxtYhWSjT1SfqxEyavwVmR0cZQ3MfV3E",
+  authDomain:        "japanese-flashcards-sync.firebaseapp.com",
+  projectId:         "japanese-flashcards-sync",
+  storageBucket:     "japanese-flashcards-sync.firebasestorage.app",
+  messagingSenderId: "156325457880",
+  appId:             "1:156325457880:web:b7bcda32fc685bea814cad"
+};
+// ══════════════════════════════════════════════════════════════════
+
+import { initializeApp }                              from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                                      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot }
+                                                      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ─── Card data ───────────────────────────────────────────────────
+const H = [
+  {c:"あ",r:"a",g:"Vowels"},{c:"い",r:"i",g:"Vowels"},{c:"う",r:"u",g:"Vowels"},{c:"え",r:"e",g:"Vowels"},{c:"お",r:"o",g:"Vowels"},
+  {c:"か",r:"ka",g:"K"},{c:"き",r:"ki",g:"K"},{c:"く",r:"ku",g:"K"},{c:"け",r:"ke",g:"K"},{c:"こ",r:"ko",g:"K"},
+  {c:"さ",r:"sa",g:"S"},{c:"し",r:"shi",g:"S"},{c:"す",r:"su",g:"S"},{c:"せ",r:"se",g:"S"},{c:"そ",r:"so",g:"S"},
+  {c:"た",r:"ta",g:"T"},{c:"ち",r:"chi",g:"T"},{c:"つ",r:"tsu",g:"T"},{c:"て",r:"te",g:"T"},{c:"と",r:"to",g:"T"},
+  {c:"な",r:"na",g:"N"},{c:"に",r:"ni",g:"N"},{c:"ぬ",r:"nu",g:"N"},{c:"ね",r:"ne",g:"N"},{c:"の",r:"no",g:"N"},
+  {c:"は",r:"ha",g:"H"},{c:"ひ",r:"hi",g:"H"},{c:"ふ",r:"fu",g:"H"},{c:"へ",r:"he",g:"H"},{c:"ほ",r:"ho",g:"H"},
+  {c:"ま",r:"ma",g:"M"},{c:"み",r:"mi",g:"M"},{c:"む",r:"mu",g:"M"},{c:"め",r:"me",g:"M"},{c:"も",r:"mo",g:"M"},
+  {c:"や",r:"ya",g:"Y"},{c:"ゆ",r:"yu",g:"Y"},{c:"よ",r:"yo",g:"Y"},
+  {c:"ら",r:"ra",g:"R"},{c:"り",r:"ri",g:"R"},{c:"る",r:"ru",g:"R"},{c:"れ",r:"re",g:"R"},{c:"ろ",r:"ro",g:"R"},
+  {c:"わ",r:"wa",g:"W"},{c:"を",r:"wo",g:"W"},{c:"ん",r:"n",g:"N (solo)"}
+];
+const K = [
+  {c:"ア",r:"a",g:"Vowels"},{c:"イ",r:"i",g:"Vowels"},{c:"ウ",r:"u",g:"Vowels"},{c:"エ",r:"e",g:"Vowels"},{c:"オ",r:"o",g:"Vowels"},
+  {c:"カ",r:"ka",g:"K"},{c:"キ",r:"ki",g:"K"},{c:"ク",r:"ku",g:"K"},{c:"ケ",r:"ke",g:"K"},{c:"コ",r:"ko",g:"K"},
+  {c:"サ",r:"sa",g:"S"},{c:"シ",r:"shi",g:"S"},{c:"ス",r:"su",g:"S"},{c:"セ",r:"se",g:"S"},{c:"ソ",r:"so",g:"S"},
+  {c:"タ",r:"ta",g:"T"},{c:"チ",r:"chi",g:"T"},{c:"ツ",r:"tsu",g:"T"},{c:"テ",r:"te",g:"T"},{c:"ト",r:"to",g:"T"},
+  {c:"ナ",r:"na",g:"N"},{c:"ニ",r:"ni",g:"N"},{c:"ヌ",r:"nu",g:"N"},{c:"ネ",r:"ne",g:"N"},{c:"ノ",r:"no",g:"N"},
+  {c:"ハ",r:"ha",g:"H"},{c:"ヒ",r:"hi",g:"H"},{c:"フ",r:"fu",g:"H"},{c:"ヘ",r:"he",g:"H"},{c:"ホ",r:"ho",g:"H"},
+  {c:"マ",r:"ma",g:"M"},{c:"ミ",r:"mi",g:"M"},{c:"ム",r:"mu",g:"M"},{c:"メ",r:"me",g:"M"},{c:"モ",r:"mo",g:"M"},
+  {c:"ヤ",r:"ya",g:"Y"},{c:"ユ",r:"yu",g:"Y"},{c:"ヨ",r:"yo",g:"Y"},
+  {c:"ラ",r:"ra",g:"R"},{c:"リ",r:"ri",g:"R"},{c:"ル",r:"ru",g:"R"},{c:"レ",r:"re",g:"R"},{c:"ロ",r:"ro",g:"R"},
+  {c:"ワ",r:"wa",g:"W"},{c:"ヲ",r:"wo",g:"W"},{c:"ン",r:"n",g:"N (solo)"}
+];
+
+const COLORS = {
+  hiragana: { bg:"#c0392b", light:"#e74c3c" },
+  katakana: { bg:"#1a5276", light:"#2980b9" },
+  both:     { bg:"#6c3483", light:"#8e44ad" }
+};
+
+// ─── State ───────────────────────────────────────────────────────
+let script="hiragana", deck=[...H], idx=0;
+let flipped=false, shuffled=false, known=new Set(), animating=false;
+let currentUser=null, unsubSnapshot=null, syncEnabled=false;
+
+// ─── DOM ─────────────────────────────────────────────────────────
+const authBar    = document.getElementById("auth-bar");
+const authLoad   = document.getElementById("auth-loading");
+const cardScene  = document.getElementById("card-scene");
+const cardInner  = document.getElementById("card-inner");
+const frontBadge = document.getElementById("front-badge");
+const frontChar  = document.getElementById("front-char");
+const frontCheck = document.getElementById("front-check");
+const backChar   = document.getElementById("back-char");
+const romajiPill = document.getElementById("romaji-pill");
+const romajiLbl  = document.getElementById("romaji-label");
+const posLbl     = document.getElementById("pos-label");
+const knownLbl   = document.getElementById("known-label");
+const posBar     = document.getElementById("pos-bar");
+const knownBar   = document.getElementById("known-bar");
+const prevBtn    = document.getElementById("prev-btn");
+const nextBtn    = document.getElementById("next-btn");
+const markBtn    = document.getElementById("mark-btn");
+const shuffleBtn = document.getElementById("shuffle-btn");
+const resetBtn   = document.getElementById("reset-btn");
+const tabBtns    = document.querySelectorAll(".tab-btn");
+const loginPrompt    = document.getElementById("login-prompt");
+const googleLoginBtn = document.getElementById("google-login-btn");
+const lpSkipBtn      = document.getElementById("lp-skip-btn");
+
+// ─── Helpers ─────────────────────────────────────────────────────
+function shuffleArr(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function buildDeck(s,sh){
+  const base=s==="hiragana"?[...H]:s==="katakana"?[...K]:[...H,...K];
+  return sh?shuffleArr(base):base;
+}
+function scriptLabel(ch){
+  if(script!=="both") return script.charAt(0).toUpperCase()+script.slice(1);
+  return H.some(x=>x.c===ch)?"Hiragana":"Katakana";
+}
+
+// ─── Firestore sync ──────────────────────────────────────────────
+function userDocRef(uid){ return doc(db,"users",uid,"progress","known"); }
+
+async function loadKnown(uid){
+  try {
+    const snap = await getDoc(userDocRef(uid));
+    if(snap.exists()) known = new Set(snap.data().cards || []);
+    else known = new Set();
+    render();
+  } catch(e){ console.warn("Load error",e); }
+}
+
+function subscribeKnown(uid){
+  if(unsubSnapshot) unsubSnapshot();
+  unsubSnapshot = onSnapshot(userDocRef(uid), snap => {
+    if(snap.exists()){
+      known = new Set(snap.data().cards || []);
+      render();
+    }
+  }, err => console.warn("Snapshot error",err));
+}
+
+async function saveKnown(){
+  if(!currentUser) return;
+  try {
+    await setDoc(userDocRef(currentUser.uid), { cards: [...known], updatedAt: Date.now() });
+  } catch(e){ console.warn("Save error",e); }
+}
+
+// ─── Auth UI ─────────────────────────────────────────────────────
+function renderAuthBar(){
+  authBar.innerHTML = "";
+  if(currentUser){
+    const wrap = document.createElement("div");
+    wrap.className = "user-info";
+
+    const dot = document.createElement("span");
+    dot.className = "sync-status";
+    dot.innerHTML = `<span class="sync-dot"></span> Synced`;
+
+    if(currentUser.photoURL){
+      const av = document.createElement("img");
+      av.className="avatar"; av.src=currentUser.photoURL; av.alt="";
+      wrap.appendChild(av);
+    }
+    const nm = document.createElement("span");
+    nm.className="user-name";
+    nm.textContent = currentUser.displayName || currentUser.email;
+
+    const out = document.createElement("button");
+    out.className="auth-btn"; out.textContent="Sign out";
+    out.addEventListener("click", ()=> signOut(auth));
+
+    wrap.appendChild(nm);
+    authBar.appendChild(dot);
+    authBar.appendChild(wrap);
+    authBar.appendChild(out);
+  } else {
+    const dot = document.createElement("span");
+    dot.className="sync-status";
+    dot.innerHTML=`<span class="sync-dot offline"></span> Not synced`;
+
+    const btn = document.createElement("button");
+    btn.className="auth-btn"; btn.textContent="Sign in to sync";
+    btn.addEventListener("click",()=>{ loginPrompt.classList.add("visible"); });
+
+    authBar.appendChild(dot);
+    authBar.appendChild(btn);
+  }
+}
+
+// ─── Auth state ──────────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  syncEnabled = !!user;
+  renderAuthBar();
+  if(user){
+    loginPrompt.classList.remove("visible");
+    loadKnown(user.uid);
+    subscribeKnown(user.uid);
+  } else {
+    if(unsubSnapshot){ unsubSnapshot(); unsubSnapshot=null; }
+  }
+  markBtn.disabled = false;
+});
+
+googleLoginBtn.addEventListener("click", async ()=>{
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch(e){ console.error("Login error",e); }
+});
+lpSkipBtn.addEventListener("click",()=>{ loginPrompt.classList.remove("visible"); });
+
+// ─── Render ──────────────────────────────────────────────────────
+function render(){
+  const card=deck[idx], col=COLORS[script];
+  document.body.style.background=`linear-gradient(135deg,${col.bg} 0%,${col.light} 100%)`;
+  document.querySelector('meta[name="theme-color"]').content=col.bg;
+
+  frontBadge.style.cssText=`background:${col.bg}20;color:${col.bg}`;
+  frontBadge.textContent=`${card.g} · ${scriptLabel(card.c)}`;
+  frontChar.textContent=card.c;
+  frontCheck.style.display=known.has(idx)?"block":"none";
+
+  backChar.textContent=card.c;
+  romajiPill.textContent=card.r.toUpperCase();
+  romajiPill.style.background=col.bg;
+  romajiLbl.textContent=`Romanization: ${card.r}`;
+
+  cardInner.classList.toggle("flipped",flipped);
+  prevBtn.style.color=col.bg; nextBtn.style.color=col.bg;
+  prevBtn.disabled=idx===0; nextBtn.disabled=idx===deck.length-1;
+
+  markBtn.classList.toggle("known",known.has(idx));
+  markBtn.textContent=known.has(idx)?"✓ Known":"Mark Known";
+
+  const pct=Math.round(((idx+1)/deck.length)*100);
+  const kPct=Math.round((known.size/deck.length)*100);
+  posLbl.textContent=`${idx+1} / ${deck.length}`;
+  knownLbl.textContent=`✓ ${known.size} known (${kPct}%)`;
+  posBar.style.width=pct+"%"; knownBar.style.width=kPct+"%";
+
+  tabBtns.forEach(b=>{
+    const on=b.dataset.script===script;
+    b.classList.toggle("active",on); b.style.color=on?col.bg:"";
+  });
+  shuffleBtn.classList.toggle("on",shuffled);
+  shuffleBtn.style.color=shuffled?col.bg:"";
+}
+
+// ─── Navigate ────────────────────────────────────────────────────
+function goTo(dir){
+  if(animating)return;
+  const next=idx+dir;
+  if(next<0||next>=deck.length)return;
+  animating=true;
+  cardInner.classList.add("animating");
+  setTimeout(()=>{
+    flipped=false; idx=next; render();
+    cardInner.classList.remove("animating");
+    setTimeout(()=>{animating=false;},50);
+  },180);
+}
+
+// ─── Touch swipe ─────────────────────────────────────────────────
+let tx=0,ty=0,tt=0;
+cardScene.addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;tt=Date.now();},{passive:true});
+cardScene.addEventListener("touchend",e=>{
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty, dt=Date.now()-tt;
+  if(dt<300&&Math.abs(dx)<10&&Math.abs(dy)<10){flipped=!flipped;render();}
+  else if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5&&dt<500){goTo(dx<0?1:-1);}
+},{passive:true});
+
+// ─── Button events ───────────────────────────────────────────────
+cardScene.addEventListener("click",()=>{flipped=!flipped;render();});
+prevBtn.addEventListener("click",()=>goTo(-1));
+nextBtn.addEventListener("click",()=>goTo(1));
+
+markBtn.addEventListener("click",()=>{
+  if(!currentUser){
+    // allow local mark, prompt login gently
+    if(known.has(idx)) known.delete(idx); else known.add(idx);
+    render();
+    if(!syncEnabled) loginPrompt.classList.add("visible");
+    return;
+  }
+  if(known.has(idx)) known.delete(idx); else known.add(idx);
+  render();
+  saveKnown();
+});
+
+shuffleBtn.addEventListener("click",()=>{
+  shuffled=!shuffled; deck=buildDeck(script,shuffled);
+  idx=0;flipped=false;render();
+});
+resetBtn.addEventListener("click",()=>{
+  if(!confirm("Reset all progress?")) return;
+  idx=0;flipped=false;known=new Set();
+  deck=buildDeck(script,shuffled);render();
+  if(currentUser) saveKnown();
+});
+tabBtns.forEach(b=>b.addEventListener("click",()=>{
+  script=b.dataset.script; deck=buildDeck(script,shuffled);
+  idx=0;flipped=false;render();
+}));
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight")goTo(1);
+  if(e.key==="ArrowLeft")goTo(-1);
+  if(e.key===" "||e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();flipped=!flipped;render();}
+});
+
+// ─── Init ────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
