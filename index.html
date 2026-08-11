@@ -161,7 +161,13 @@
     }
     .card-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(5rem,16vw,7rem); line-height:1; color:#1a1a2e; }
     .card-hint { color: #bbb; font-size: .78rem; margin-top: 12px; }
-    .known-check { position: absolute; top: 14px; right: 16px; font-size: 1.4rem; }
+    .known-check {
+      position: absolute; top: 14px; right: 16px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #2ecc71; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
     .back-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(3rem,10vw,4.5rem); line-height:1; color:#1a1a2e; }
 
     /* ── Dark theme surfaces ── */
@@ -190,9 +196,10 @@
     .controls { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
     .nav-btn {
       width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
-      font-size: 1.3rem; font-weight: 700; font-family: inherit;
+      font-weight: 700; font-family: inherit;
       background: rgba(255,255,255,.9); transition: opacity .2s, transform .1s;
       box-shadow: 0 4px 12px rgba(0,0,0,.15); touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center;
     }
     .nav-btn:active:not(:disabled) { transform: scale(0.93); }
     .nav-btn:disabled { background: rgba(255,255,255,.2); color: rgba(255,255,255,.4); cursor: default; box-shadow: none; }
@@ -214,6 +221,7 @@
       background: rgba(255,255,255,.2); color: #fff; font-size: .8rem;
       font-weight: 600; font-family: inherit; transition: background .2s;
       touch-action: manipulation; min-height: 44px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .sec-btn.on { background: rgba(255,255,255,.9); }
     .sec-btn:active { transform: scale(0.95); }
@@ -234,7 +242,12 @@
       max-width: 360px; width: 100%; text-align: center;
       box-shadow: 0 24px 80px rgba(0,0,0,.3);
     }
-    .login-box .lp-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .login-box .lp-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 14px;
+      background: #c0392b20; color: #c0392b;
+    }
+    html[data-theme="dark"] .login-box .lp-icon { background: #ff6b5b20; color: #ff6b5b; }
     .login-box h2 { font-size: 1.2rem; color: #1a1a2e; margin-bottom: 8px; }
     .login-box p  { font-size: .85rem; color: #666; margin-bottom: 24px; line-height: 1.5; }
     .google-btn {
@@ -284,7 +297,7 @@
 
   <!-- Top row: theme toggle + auth bar -->
   <div class="top-row">
-    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
     <div class="auth-bar" id="auth-bar">
       <div id="auth-loading" class="sync-status">
         <span class="auth-spinner"><span></span><span></span><span></span></span>
@@ -318,7 +331,9 @@
         <div class="card-badge" id="front-badge"></div>
         <div class="card-char"  id="front-char"></div>
         <div class="card-hint">Tap to reveal pronunciation</div>
-        <div class="known-check" id="front-check" style="display:none">✅</div>
+        <div class="known-check" id="front-check" style="display:none">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
       </div>
       <div class="card-face card-back">
         <div class="card-badge">Pronunciation</div>
@@ -332,14 +347,24 @@
   <div class="swipe-hint">← Swipe left / right to navigate →</div>
 
   <div class="controls">
-    <button class="nav-btn" id="prev-btn" disabled>←</button>
+    <button class="nav-btn" id="prev-btn" disabled aria-label="Previous card">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <button class="mark-btn" id="mark-btn">Mark Known</button>
-    <button class="nav-btn" id="next-btn">→</button>
+    <button class="nav-btn" id="next-btn" aria-label="Next card">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
   </div>
 
   <div class="secondary">
-    <button class="sec-btn" id="shuffle-btn">🔀 Shuffle</button>
-    <button class="sec-btn" id="reset-btn">↺ Reset</button>
+    <button class="sec-btn" id="shuffle-btn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="17" x2="9" y2="7"/><line x1="15" y1="7" x2="21" y2="17"/><polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="15" y2="9"/><polyline points="15 21 21 21 21 15"/><line x1="21" y1="21" x2="15" y2="15"/><line x1="3" y1="7" x2="9" y2="17"/></svg>
+      Shuffle
+    </button>
+    <button class="sec-btn" id="reset-btn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Reset
+    </button>
   </div>
 
   <div class="kbd-hint">← → Navigate &nbsp;·&nbsp; Space / ↑↓ Flip</div>
@@ -349,7 +374,9 @@
   <!-- Login prompt -->
   <div class="login-prompt" id="login-prompt">
     <div class="login-box">
-      <div class="lp-icon">🔐</div>
+      <div class="lp-icon">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      </div>
       <h2>Save your progress</h2>
       <p>Sign in to sync your "Known" cards across all your devices automatically.</p>
       <button class="google-btn" id="google-login-btn">
@@ -446,14 +473,18 @@ const COLORS_DARK = {
 const themeToggleBtn = document.getElementById("theme-toggle-btn");
 let theme = document.documentElement.getAttribute("data-theme") || "light";
 
+const ICON_MOON = '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const ICON_SUN  = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
 function applyTheme(){
   document.documentElement.setAttribute("data-theme", theme);
-  themeToggleBtn.textContent = theme === "dark" ? "☀️" : "🌙";
   themeToggleBtn.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
   // Inverted on purpose: the button previews the *destination* theme
   // (dark surface + moon while in light mode, bright surface + sun while in dark mode).
   themeToggleBtn.style.background = theme === "dark" ? "rgba(255,255,255,.9)" : "rgba(30,30,46,.92)";
   themeToggleBtn.style.boxShadow  = theme === "dark" ? "0 4px 12px rgba(0,0,0,.15)" : "0 4px 12px rgba(0,0,0,.5)";
+  themeToggleBtn.innerHTML = theme === "dark" ? ICON_SUN : ICON_MOON;
+  themeToggleBtn.style.color = theme === "dark" ? "#f5a623" : "#cfd3e8";
 }
 themeToggleBtn.addEventListener("click", ()=>{
   theme = theme === "dark" ? "light" : "dark";
