@@ -1,0 +1,14 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each user can only read/write their own progress doc:
+    // users/{uid}/progress/known
+    match /users/{userId}/progress/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Everything else is denied by default (Firestore denies
+    // any path with no matching rule).
+  }
+}

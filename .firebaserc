@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "japanese-flashcards-sync"
+  },
+  "targets": {
+    "japanese-flashcards-sync": {
+      "hosting": {
+        "main": [
+          "japanese-flash-cards"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
