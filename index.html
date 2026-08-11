@@ -9,6 +9,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    // Apply saved/system theme before first paint, to avoid a flash of the wrong theme.
+    (function(){
+      try {
+        var t = localStorage.getItem('kana-theme');
+        if(!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch(e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#c0392b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -28,12 +38,29 @@
       background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
       transition: background 0.5s ease;
     }
+    html[data-theme="dark"] body { background: linear-gradient(135deg, #3a0d0a 0%, #5c150f 100%); }
+
+    /* ── Top row (theme toggle + auth bar) ── */
+    .top-row {
+      width: 100%; max-width: 440px;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .theme-toggle-btn {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.5); background: rgba(255,255,255,.15);
+      color: #fff; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s; touch-action: manipulation;
+    }
+    .theme-toggle-btn:hover { background: rgba(255,255,255,.3); }
+    .theme-toggle-btn:active { transform: scale(0.93); }
 
     /* ── Auth bar ── */
     .auth-bar {
-      width: 100%; max-width: 440px;
+      flex: 1; min-width: 0;
       display: flex; justify-content: flex-end; align-items: center;
-      gap: 10px; margin-bottom: 10px; min-height: 36px;
+      gap: 10px; min-height: 36px;
     }
     .auth-bar .user-info {
       display: flex; align-items: center; gap: 8px;
@@ -125,6 +152,19 @@
     .card-hint { color: #bbb; font-size: .78rem; margin-top: 12px; }
     .known-check { position: absolute; top: 14px; right: 16px; font-size: 1.4rem; }
     .back-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(3rem,10vw,4.5rem); line-height:1; color:#1a1a2e; }
+
+    /* ── Dark theme surfaces ── */
+    html[data-theme="dark"] .card-face { background: #1e1e2e; box-shadow: 0 16px 48px rgba(0,0,0,.5); }
+    html[data-theme="dark"] .card-char,
+    html[data-theme="dark"] .back-char { color: #f0f0f2; }
+    html[data-theme="dark"] .card-hint { color: #82828f; }
+    html[data-theme="dark"] .romaji-label { color: #92929e; }
+    html[data-theme="dark"] .login-box { background: #22222f; }
+    html[data-theme="dark"] .login-box h2 { color: #f0f0f2; }
+    html[data-theme="dark"] .login-box p { color: #a5a5b0; }
+    html[data-theme="dark"] .lp-skip { color: #6b6b78; }
+    html[data-theme="dark"] .modal-btn-cancel { background: #33334a; color: #eee; }
+    html[data-theme="dark"] .modal-btn-cancel:hover { background: #3d3d58; }
     .romaji-pill {
       margin-top: 12px; padding: 8px 28px; border-radius: 999px;
       color: #fff; font-size: clamp(1.2rem,5vw,1.6rem); font-weight: 700; letter-spacing: .12em;
@@ -231,10 +271,13 @@
 </head>
 <body>
 
-  <!-- Auth bar -->
-  <div class="auth-bar" id="auth-bar">
-    <div id="auth-loading" class="sync-status">
-      <span class="auth-spinner"><span></span><span></span><span></span></span>
+  <!-- Top row: theme toggle + auth bar -->
+  <div class="top-row">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+    <div class="auth-bar" id="auth-bar">
+      <div id="auth-loading" class="sync-status">
+        <span class="auth-spinner"><span></span><span></span><span></span></span>
+      </div>
     </div>
   </div>
 
@@ -374,11 +417,36 @@ const K = [
   {c:"ワ",r:"wa",g:"W"},{c:"ヲ",r:"wo",g:"W"},{c:"ン",r:"n",g:"N (solo)"}
 ];
 
-const COLORS = {
-  hiragana: { bg:"#c0392b", light:"#e74c3c" },
-  katakana: { bg:"#1a5276", light:"#2980b9" },
-  both:     { bg:"#6c3483", light:"#8e44ad" }
+// bg/light drive the page background gradient; accent is used for
+// text/icons that sit on the (light or dark) card surface, so it
+// needs to stay legible against that surface in each theme.
+const COLORS_LIGHT = {
+  hiragana: { bg:"#c0392b", light:"#e74c3c", accent:"#c0392b" },
+  katakana: { bg:"#1a5276", light:"#2980b9", accent:"#1a5276" },
+  both:     { bg:"#6c3483", light:"#8e44ad", accent:"#6c3483" }
 };
+const COLORS_DARK = {
+  hiragana: { bg:"#3a0d0a", light:"#5c150f", accent:"#ff6b5b" },
+  katakana: { bg:"#0a1f30", light:"#123049", accent:"#5dade2" },
+  both:     { bg:"#26123a", light:"#3a1a57", accent:"#c39bd3" }
+};
+
+// ─── Theme (light/dark) ────────────────────────────────────────────
+const themeToggleBtn = document.getElementById("theme-toggle-btn");
+let theme = document.documentElement.getAttribute("data-theme") || "light";
+
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme", theme);
+  themeToggleBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+  themeToggleBtn.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+}
+themeToggleBtn.addEventListener("click", ()=>{
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("kana-theme", theme); } catch(e){}
+  applyTheme();
+  render();
+});
+applyTheme();
 
 // ─── State ───────────────────────────────────────────────────────
 let script="hiragana", deck=[...H], idx=0;
@@ -523,22 +591,23 @@ lpSkipBtn.addEventListener("click",()=>{ loginPrompt.classList.remove("visible")
 
 // ─── Render ──────────────────────────────────────────────────────
 function render(){
-  const card=deck[idx], col=COLORS[script];
+  const card=deck[idx];
+  const col=(theme==="dark"?COLORS_DARK:COLORS_LIGHT)[script];
   document.body.style.background=`linear-gradient(135deg,${col.bg} 0%,${col.light} 100%)`;
   document.querySelector('meta[name="theme-color"]').content=col.bg;
 
-  frontBadge.style.cssText=`background:${col.bg}20;color:${col.bg}`;
+  frontBadge.style.cssText=`background:${col.accent}20;color:${col.accent}`;
   frontBadge.textContent=`${card.g} · ${scriptLabel(card.c)}`;
   frontChar.textContent=card.c;
   frontCheck.style.display=known.has(idx)?"block":"none";
 
   backChar.textContent=card.c;
   romajiPill.textContent=card.r.toUpperCase();
-  romajiPill.style.background=col.bg;
+  romajiPill.style.background=col.accent;
   romajiLbl.textContent=`Romanization: ${card.r}`;
 
   cardInner.classList.toggle("flipped",flipped);
-  prevBtn.style.color=col.bg; nextBtn.style.color=col.bg;
+  prevBtn.style.color=col.accent; nextBtn.style.color=col.accent;
   prevBtn.disabled=idx===0; nextBtn.disabled=idx===deck.length-1;
 
   markBtn.classList.toggle("known",known.has(idx));
@@ -552,10 +621,10 @@ function render(){
 
   tabBtns.forEach(b=>{
     const on=b.dataset.script===script;
-    b.classList.toggle("active",on); b.style.color=on?col.bg:"";
+    b.classList.toggle("active",on); b.style.color=on?col.accent:"";
   });
   shuffleBtn.classList.toggle("on",shuffled);
-  shuffleBtn.style.color=shuffled?col.bg:"";
+  shuffleBtn.style.color=shuffled?col.accent:"";
 }
 
 // ─── Navigate ────────────────────────────────────────────────────
