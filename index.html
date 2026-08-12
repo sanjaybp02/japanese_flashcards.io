@@ -67,41 +67,47 @@
     }
     html[data-theme="dark"] .nav-btn:disabled { background: rgba(255,255,255,.06); }
 
-    /* ── Auth bar ── */
-    .auth-bar {
-      flex: 1; min-width: 0;
-      display: flex; justify-content: flex-end; align-items: center;
-      gap: 10px; min-height: 36px;
+    /* ── Auth bar (account button + dropdown) ── */
+    .auth-bar { flex: 1; min-width: 0; display: flex; justify-content: flex-end; }
+    .account-wrap { position: relative; }
+    .account-btn {
+      width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(255,255,255,.9); color: #333; padding: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15); transition: transform .1s;
+      touch-action: manipulation; position: relative;
     }
-    .auth-bar .user-info {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .auth-bar img.avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.6);
-    }
-    .auth-bar .user-name {
-      color: rgba(255,255,255,.85); font-size: .78rem; font-weight: 600;
-      max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .auth-btn {
-      padding: 6px 14px; border-radius: 999px; border: 2px solid rgba(255,255,255,.5);
-      background: rgba(255,255,255,.15); color: #fff; font-size: .75rem;
-      font-weight: 700; font-family: inherit; cursor: pointer;
-      transition: background .2s; min-height: 34px; touch-action: manipulation;
-    }
-    .auth-btn:hover { background: rgba(255,255,255,.3); }
-    .sync-status {
-      font-size: .68rem; color: rgba(255,255,255,.55); display: flex; align-items: center; gap: 4px;
-    }
+    .account-btn:active { transform: scale(0.93); }
+    .account-btn img { width: 100%; height: 100%; object-fit: cover; }
+    .account-btn .initials { font-size: .85rem; font-weight: 700; }
     .sync-dot {
-      width: 6px; height: 6px; border-radius: 50%; background: #2ecc71;
+      position: absolute; bottom: -1px; right: -1px;
+      width: 11px; height: 11px; border-radius: 50%; background: #2ecc71;
+      border: 2px solid; box-shadow: 0 0 0 1px rgba(0,0,0,.1);
       animation: pulse 2s infinite;
     }
     .sync-dot.offline { background: #e67e22; animation: none; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    html[data-theme="dark"] .account-btn {
+      background: rgba(30,30,46,.92); color: #eee; box-shadow: 0 4px 12px rgba(0,0,0,.5);
+    }
+
+    .account-menu {
+      position: absolute; top: calc(100% + 10px); right: 0; z-index: 50;
+      min-width: 220px; background: #fff; border-radius: 16px; padding: 14px;
+      box-shadow: 0 16px 48px rgba(0,0,0,.25);
+      opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity .15s, transform .15s;
+    }
+    .account-menu.open { opacity: 1; transform: translateY(0); pointer-events: all; }
+    .account-menu .menu-email {
+      font-size: .78rem; color: #666; word-break: break-all; margin-bottom: 12px; line-height: 1.4;
+    }
+    html[data-theme="dark"] .account-menu { background: #22222f; }
+    html[data-theme="dark"] .account-menu .menu-email { color: #a5a5b0; }
 
     /* ── Loading spinner (auth bar) ── */
+    .auth-loading-wrap { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
     .auth-spinner { display: flex; gap: 4px; align-items: center; }
     .auth-spinner span {
       width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.65);
@@ -317,7 +323,7 @@
   <div class="top-row">
     <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
     <div class="auth-bar" id="auth-bar">
-      <div id="auth-loading" class="sync-status">
+      <div id="auth-loading" class="auth-loading-wrap">
         <span class="auth-spinner"><span></span><span></span><span></span></span>
       </div>
     </div>
@@ -445,7 +451,7 @@ const firebaseConfig = {
 // ══════════════════════════════════════════════════════════════════
 
 import { initializeApp }                              from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
                                                       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot }
                                                       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -600,46 +606,69 @@ async function saveKnown(){
 }
 
 // ─── Auth UI ─────────────────────────────────────────────────────
+// Single account button, top-right: avatar (or initials) with a small
+// sync-status dot. Signed in -> click opens a small dropdown with the
+// email and a Sign out button. Signed out -> click opens the sign-in prompt.
+const ICON_PERSON = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
+
 function renderAuthBar(){
   authBar.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "account-wrap";
+
+  const btn = document.createElement("button");
+  btn.className = "account-btn"; btn.type = "button";
+
   if(currentUser){
-    const wrap = document.createElement("div");
-    wrap.className = "user-info";
-
-    const dot = document.createElement("span");
-    dot.className = "sync-status";
-    dot.innerHTML = `<span class="sync-dot"></span> Synced`;
-
+    btn.setAttribute("aria-label","Account menu");
     if(currentUser.photoURL){
-      const av = document.createElement("img");
-      av.className="avatar"; av.src=currentUser.photoURL; av.alt="";
-      wrap.appendChild(av);
+      const img = document.createElement("img");
+      img.src = currentUser.photoURL; img.alt = "";
+      btn.appendChild(img);
+    } else {
+      const initials = document.createElement("span");
+      initials.className = "initials";
+      const src = currentUser.displayName || currentUser.email || "?";
+      initials.textContent = src.trim().charAt(0).toUpperCase();
+      btn.appendChild(initials);
     }
-    const nm = document.createElement("span");
-    nm.className="user-name";
-    nm.textContent = currentUser.displayName || currentUser.email;
-
-    const out = document.createElement("button");
-    out.className="auth-btn"; out.textContent="Sign out";
-    out.addEventListener("click", ()=> signOut(auth));
-
-    wrap.appendChild(nm);
-    authBar.appendChild(dot);
-    authBar.appendChild(wrap);
-    authBar.appendChild(out);
-  } else {
     const dot = document.createElement("span");
-    dot.className="sync-status";
-    dot.innerHTML=`<span class="sync-dot offline"></span> Not synced`;
+    dot.className = "sync-dot";
+    btn.appendChild(dot);
 
-    const btn = document.createElement("button");
-    btn.className="auth-btn"; btn.textContent="Sign in to sync";
-    btn.addEventListener("click",()=>{ loginPrompt.classList.add("visible"); });
+    const menu = document.createElement("div");
+    menu.className = "account-menu";
+    const email = document.createElement("div");
+    email.className = "menu-email";
+    email.textContent = currentUser.email || currentUser.displayName || "";
+    const signOutBtn = document.createElement("button");
+    signOutBtn.className = "modal-btn modal-btn-danger";
+    signOutBtn.style.width = "100%";
+    signOutBtn.textContent = "Sign out";
+    signOutBtn.addEventListener("click", ()=>{ menu.classList.remove("open"); signOut(auth); });
+    menu.appendChild(email);
+    menu.appendChild(signOutBtn);
 
-    authBar.appendChild(dot);
-    authBar.appendChild(btn);
+    btn.addEventListener("click", e=>{ e.stopPropagation(); menu.classList.toggle("open"); });
+
+    wrap.appendChild(btn);
+    wrap.appendChild(menu);
+  } else {
+    btn.setAttribute("aria-label","Sign in to sync");
+    btn.innerHTML = ICON_PERSON;
+    const dot = document.createElement("span");
+    dot.className = "sync-dot offline";
+    btn.appendChild(dot);
+    btn.addEventListener("click", ()=>{ loginPrompt.classList.add("visible"); });
+    wrap.appendChild(btn);
   }
+
+  authBar.appendChild(wrap);
 }
+document.addEventListener("click", e=>{
+  const menu = document.querySelector(".account-menu.open");
+  if(menu && !menu.contains(e.target) && !e.target.closest(".account-btn")) menu.classList.remove("open");
+});
 
 // ─── Auth state ──────────────────────────────────────────────────
 onAuthStateChanged(auth, user => {
@@ -656,10 +685,22 @@ onAuthStateChanged(auth, user => {
   markBtn.disabled = false;
 });
 
+// Complete a pending redirect-based sign-in, if one is in progress
+// (the user gets sent back here after signing in on Google's page).
+getRedirectResult(auth).catch(e => console.warn("Redirect sign-in error",e));
+
 googleLoginBtn.addEventListener("click", async ()=>{
+  const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
-  } catch(e){ console.error("Login error",e); }
+    await signInWithPopup(auth, provider);
+  } catch(e){
+    // Popups are unreliable on many mobile browsers (blocked outright, or
+    // storage partitioned between the popup and the opener so the signed-in
+    // session never actually persists) -- redirect is the reliable fallback.
+    console.warn("Popup sign-in failed, falling back to redirect:",e);
+    try { await signInWithRedirect(auth, provider); }
+    catch(e2){ console.error("Redirect sign-in also failed:",e2); }
+  }
 });
 lpSkipBtn.addEventListener("click",()=>{ loginPrompt.classList.remove("visible"); });
 
