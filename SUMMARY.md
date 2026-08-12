@@ -61,11 +61,12 @@ GitHub Actions workflow — no manual step needed there.
 
 ## Features as of now
 
-- **4 decks**, each its own tab and color theme (light + dark variants):
+- **5 decks**, each its own tab and color theme (light + dark variants):
   - Hiragana (46 chars) — red
   - Katakana (46 chars) — blue
   - Both (92, Hiragana+Katakana concatenated) — purple
   - Numbers (12: ichi–kyuu, juu, hyaku, sen = 1–9, 10, 100, 1000) — orange
+  - Kanji (42 foundational JLPT N5 chars with readings & meanings) — emerald green
 - **Dark mode**: toggle button (top-left), detects system preference on
   first visit, then remembers explicit choice via `localStorage`
   (`kana-theme` key). Inline pre-body script applies it before first paint
@@ -200,7 +201,7 @@ GitHub Actions workflow — no manual step needed there.
 
 - Repo visibility (public vs. private) — discussed early on, no decision
   made, never changed from public.
-- Kanji deck — not built (flagged as a natural next step).
+- Kanji deck — built (42 foundational JLPT N5 Kanji cards added with readings, meanings, speech audio, and emerald theme).
 - Spaced repetition (SRS) — not built.
 - PWA/offline support — not built (there's a `manifest.json`/service-worker
   gap; the meta tags for "add to home screen" exist but no actual PWA

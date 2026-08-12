@@ -383,6 +383,7 @@
     <button class="tab-btn"        data-script="katakana">カ Katakana</button>
     <button class="tab-btn"        data-script="both">両 Both</button>
     <button class="tab-btn"        data-script="numbers">数 Numbers</button>
+    <button class="tab-btn"        data-script="kanji">漢 Kanji</button>
   </div>
 
   <div class="progress-wrap">
@@ -541,6 +542,54 @@ const N = [
   {c:"百",r:"hyaku",g:"Hundreds",n:"100"},
   {c:"千",r:"sen",g:"Thousands",n:"1000"}
 ];
+const KJ = [
+  // Nature & Elements
+  {c:"日",r:"nichi, hi · sun/day",g:"Nature"},
+  {c:"月",r:"tsuki, getsu · moon/month",g:"Nature"},
+  {c:"木",r:"ki, moku · tree/wood",g:"Nature"},
+  {c:"水",r:"mizu, sui · water",g:"Nature"},
+  {c:"火",r:"hi, ka · fire",g:"Nature"},
+  {c:"土",r:"tsuchi, to · soil/earth",g:"Nature"},
+  {c:"金",r:"kane, kin · gold/money",g:"Nature"},
+  {c:"天",r:"ten, ama · heaven/sky",g:"Nature"},
+  {c:"空",r:"sora, kuu · sky/empty",g:"Nature"},
+  {c:"雨",r:"ame, u · rain",g:"Nature"},
+  {c:"山",r:"yama, san · mountain",g:"Nature"},
+  {c:"川",r:"kawa, sen · river",g:"Nature"},
+  {c:"田",r:"ta, den · rice field",g:"Nature"},
+  // People & Body
+  {c:"人",r:"hito, jin · person",g:"People"},
+  {c:"女",r:"onna, jo · woman",g:"People"},
+  {c:"男",r:"otoko, dan · man",g:"People"},
+  {c:"子",r:"ko, shi · child",g:"People"},
+  {c:"目",r:"me, moku · eye",g:"Body"},
+  {c:"口",r:"kuchi, kou · mouth",g:"Body"},
+  {c:"手",r:"te, shu · hand",g:"Body"},
+  {c:"足",r:"ashi, soku · foot/leg",g:"Body"},
+  // Time & Directions
+  {c:"年",r:"toshi, nen · year",g:"Time"},
+  {c:"上",r:"ue, jou · up/above",g:"Directions"},
+  {c:"下",r:"shita, ka · down/below",g:"Directions"},
+  {c:"中",r:"naka, chuu · inside/middle",g:"Directions"},
+  {c:"大",r:"oo, dai · big",g:"Concepts"},
+  {c:"小",r:"chii, shou · small",g:"Concepts"},
+  {c:"左",r:"hidari, sa · left",g:"Directions"},
+  {c:"右",r:"migi, u · right",g:"Directions"},
+  {c:"東",r:"higashi, tou · east",g:"Directions"},
+  {c:"西",r:"nishi, sei · west",g:"Directions"},
+  {c:"南",r:"minami, nan · south",g:"Directions"},
+  {c:"北",r:"kita, hoku · north",g:"Directions"},
+  // Daily Life & Actions
+  {c:"本",r:"hon, moto · book/origin",g:"Daily Life"},
+  {c:"生",r:"nama, sei · life/birth",g:"Daily Life"},
+  {c:"先",r:"saki, sen · ahead/previous",g:"Daily Life"},
+  {c:"学",r:"manabu, gaku · study",g:"Daily Life"},
+  {c:"校",r:"kou · school",g:"Daily Life"},
+  {c:"車",r:"kuruma, sha · car/wheel",g:"Daily Life"},
+  {c:"電",r:"den · electricity",g:"Daily Life"},
+  {c:"食",r:"taberu, shoku · eat/food",g:"Actions"},
+  {c:"見",r:"miru, ken · see/look",g:"Actions"}
+];
 
 // bg/light drive the page background gradient; accent is used for
 // text/icons that sit on the (light or dark) card surface, so it
@@ -549,7 +598,8 @@ const COLORS_LIGHT = {
   hiragana: { bg:"#c0392b", light:"#e74c3c", accent:"#c0392b" },
   katakana: { bg:"#1a5276", light:"#2980b9", accent:"#1a5276" },
   both:     { bg:"#6c3483", light:"#8e44ad", accent:"#6c3483" },
-  numbers:  { bg:"#d35400", light:"#e67e22", accent:"#d35400" }
+  numbers:  { bg:"#d35400", light:"#e67e22", accent:"#d35400" },
+  kanji:    { bg:"#117864", light:"#16a085", accent:"#117864" }
 };
 // Near-black with just a whisper of the script's hue, rather than a fully
 // saturated dark gradient — reads as a premium dark UI instead of "murky".
@@ -558,7 +608,8 @@ const COLORS_DARK = {
   hiragana: { bg:"#170f11", light:"#221216", accent:"#ff6b5b" },
   katakana: { bg:"#0e1318", light:"#141b22", accent:"#5dade2" },
   both:     { bg:"#150f18", light:"#1c1420", accent:"#c39bd3" },
-  numbers:  { bg:"#1f130a", light:"#2b1a0d", accent:"#ff9f43" }
+  numbers:  { bg:"#1f130a", light:"#2b1a0d", accent:"#ff9f43" },
+  kanji:    { bg:"#0a1815", light:"#122520", accent:"#2ecc71" }
 };
 
 // ─── Theme (light/dark) ────────────────────────────────────────────
@@ -627,10 +678,11 @@ function shuffleArr(arr) {
   return a;
 }
 function buildDeck(s,sh){
-  const base=s==="hiragana"?[...H]:s==="katakana"?[...K]:s==="numbers"?[...N]:[...H,...K];
+  const base=s==="hiragana"?[...H]:s==="katakana"?[...K]:s==="numbers"?[...N]:s==="kanji"?[...KJ]:[...H,...K];
   return sh?shuffleArr(base):base;
 }
 function scriptLabel(ch){
+  if(script==="kanji") return "Kanji";
   if(script!=="both") return script.charAt(0).toUpperCase()+script.slice(1);
   return H.some(x=>x.c===ch)?"Hiragana":"Katakana";
 }
