@@ -975,9 +975,7 @@ function userDocRef(uid){ return doc(db,"users",uid,"progress","known"); }
 
 function subscribeKnown(uid){
   if(unsubSnapshot) unsubSnapshot();
-  unsubSnapshot = onSnapshot(userDocRef(uid), { includeMetadataChanges: true }, snap => {
-    // Ignore local pending write snapshot echoes so rapid clicks aren't overwritten by old snapshots
-    if(snap.metadata.hasPendingWrites) return;
+  unsubSnapshot = onSnapshot(userDocRef(uid), snap => {
     if(snap.exists()){
       const remoteCards = snap.data().cards || [];
       known = new Set(remoteCards);
@@ -1046,6 +1044,7 @@ function renderAuthBar(){
     // positioned to poke past the button's own edge.
     const dot = document.createElement("span");
     dot.className = "sync-dot";
+    dot.title = `Cloud Sync Active (${currentUser.email || "Signed in"})`;
 
     wrap.appendChild(btn);
     wrap.appendChild(dot);
@@ -1055,6 +1054,7 @@ function renderAuthBar(){
     btn.innerHTML = ICON_PERSON;
     const dot = document.createElement("span");
     dot.className = "sync-dot offline";
+    dot.title = "Offline / Signed Out (Tap to sign in and sync)";
     wrap.appendChild(btn);
     wrap.appendChild(dot);
     btn.addEventListener("click", ()=>{ loginPrompt.classList.add("visible"); });
