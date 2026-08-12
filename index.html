@@ -83,7 +83,7 @@
     .sync-dot {
       position: absolute; bottom: -1px; right: -1px;
       width: 11px; height: 11px; border-radius: 50%; background: #2ecc71;
-      border: 2px solid; box-shadow: 0 0 0 1px rgba(0,0,0,.1);
+      border: 2px solid rgba(255,255,255,.9);
       animation: pulse 2s infinite;
     }
     .sync-dot.offline { background: #e67e22; animation: none; }
@@ -91,6 +91,7 @@
     html[data-theme="dark"] .account-btn {
       background: rgba(30,30,46,.92); color: #eee; box-shadow: 0 4px 12px rgba(0,0,0,.5);
     }
+    html[data-theme="dark"] .sync-dot { border-color: rgba(30,30,46,.92); }
 
     .account-menu {
       position: absolute; top: calc(100% + 10px); right: 0; z-index: 50;
@@ -300,6 +301,16 @@
     .modal-btn-cancel:hover { background: #e6e6e6; }
     .modal-btn-danger { background: #c0392b; color: #fff; }
     .modal-btn-danger:hover { background: #a93226; }
+
+    .menu-signout-btn {
+      width: 100%; padding: 7px 14px; border-radius: 999px; border: none; cursor: pointer;
+      background: #f2f2f2; color: #333; font-weight: 700; font-family: inherit; font-size: .78rem;
+      transition: background .2s; touch-action: manipulation;
+    }
+    .menu-signout-btn:hover { background: #e6e6e6; }
+    .menu-signout-btn:active { transform: scale(0.96); }
+    html[data-theme="dark"] .menu-signout-btn { background: #33334a; color: #eee; }
+    html[data-theme="dark"] .menu-signout-btn:hover { background: #3d3d58; }
 
     /* ── Keyboard focus visibility ── */
     button:focus-visible {
@@ -642,8 +653,7 @@ function renderAuthBar(){
     email.className = "menu-email";
     email.textContent = currentUser.email || currentUser.displayName || "";
     const signOutBtn = document.createElement("button");
-    signOutBtn.className = "modal-btn modal-btn-danger";
-    signOutBtn.style.width = "100%";
+    signOutBtn.className = "menu-signout-btn";
     signOutBtn.textContent = "Sign out";
     signOutBtn.addEventListener("click", ()=>{ menu.classList.remove("open"); signOut(auth); });
     menu.appendChild(email);
