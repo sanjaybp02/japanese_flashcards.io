@@ -390,10 +390,7 @@
     <div class="card-inner" id="card-inner">
       <div class="card-face card-front">
         <div class="card-badge" id="front-badge"></div>
-        <div class="char-row">
-          <div class="card-char" id="front-char"></div>
-          <div class="num-badge" id="front-num" style="display:none"></div>
-        </div>
+        <div class="card-char" id="front-char"></div>
         <div class="card-hint">Tap to reveal pronunciation</div>
         <div class="known-check" id="front-check" style="display:none">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -599,7 +596,6 @@ const frontChar  = document.getElementById("front-char");
 const frontCheck = document.getElementById("front-check");
 const backChar   = document.getElementById("back-char");
 const speakerBack  = document.getElementById("speaker-back");
-const frontNum   = document.getElementById("front-num");
 const backNum    = document.getElementById("back-num");
 const romajiPill = document.getElementById("romaji-pill");
 const romajiLbl  = document.getElementById("romaji-label");
@@ -783,16 +779,16 @@ function render(){
   romajiPill.style.background=col.accent;
   romajiLbl.textContent=`Romanization: ${card.r}`;
 
-  // Numeral badge (1, 10, 100, ...) sits next to the character -- only
-  // the Numbers deck's cards have an 'n' field, hidden otherwise.
-  [frontNum,backNum].forEach(el=>{
-    if(card.n){
-      el.textContent=card.n;
-      el.style.cssText=`display:inline-flex;background:${col.accent}18;color:${col.accent}`;
-    } else {
-      el.style.display="none";
-    }
-  });
+  // Numeral badge (1, 10, 100, ...) sits next to the character on the
+  // back only, alongside the romaji answer -- keeps the front a clean
+  // guess-the-character prompt. Only the Numbers deck's cards have an
+  // 'n' field; hidden otherwise.
+  if(card.n){
+    backNum.textContent=card.n;
+    backNum.style.cssText=`display:inline-flex;background:${col.accent}18;color:${col.accent}`;
+  } else {
+    backNum.style.display="none";
+  }
 
   cardInner.classList.toggle("flipped",flipped);
   prevBtn.style.color=col.accent; nextBtn.style.color=col.accent;
