@@ -269,11 +269,11 @@
 
     /* ── Progress ── */
     .progress-wrap { width: 100%; max-width: 440px; margin-bottom: 14px; }
-    .progress-labels { display: flex; justify-content: space-between; color: rgba(255,255,255,.75); font-size: .73rem; margin-bottom: 4px; }
-    .bar-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; margin-bottom: 3px; }
-    .bar-fill  { height: 100%; border-radius: 999px; background: #fff; transition: width .3s; }
-    .bar-known-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
-    .bar-known-fill  { height: 100%; border-radius: 999px; background: #2ecc71; transition: width .3s; }
+    .progress-labels { display: flex; justify-content: space-between; color: rgba(255,255,255,.85); font-size: .75rem; font-weight: 600; margin-bottom: 5px; }
+    .bar-track { height: 7px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; margin-bottom: 4px; }
+    .bar-fill  { height: 100%; border-radius: 999px; background: #fff; transition: width .35s ease; box-shadow: 0 0 8px rgba(255,255,255,.4); }
+    .bar-known-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
+    .bar-known-fill  { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2ecc71, #27ae60); transition: width .35s ease; box-shadow: 0 0 8px rgba(46,204,113,.4); }
 
     /* ── Card ── */
     .card-scene {
@@ -983,6 +983,10 @@ function subscribeKnown(uid){
       known = new Set(remoteCards);
       saveLocalKnown();
       render();
+    } else {
+      known = new Set();
+      saveLocalKnown();
+      render();
     }
   }, err => console.warn("Snapshot error",err));
 }
@@ -1070,13 +1074,21 @@ onAuthStateChanged(auth, async user => {
   renderAuthBar();
   if(user){
     loginPrompt.classList.remove("visible");
-    // Merge local offline cards with remote Firestore cards on sign-in
+    // Merge local offline cards with remote Firestore cards on sign-in without overwriting remote progress
     try {
       const snap = await getDoc(userDocRef(user.uid));
-      const remoteCards = snap.exists() ? (snap.data().cards || []) : [];
-      known = new Set([...known, ...remoteCards]);
-      saveLocalKnown();
-      await setDoc(userDocRef(user.uid), { cards: [...known], updatedAt: Date.now() });
+      if (snap.exists()) {
+        const remoteCards = snap.data().cards || [];
+        const localCards = [...known];
+        const merged = new Set([...localCards, ...remoteCards]);
+        known = merged;
+        saveLocalKnown();
+        if (merged.size > remoteCards.length) {
+          await setDoc(userDocRef(user.uid), { cards: [...merged], updatedAt: Date.now() });
+        }
+      } else if (known.size > 0) {
+        await setDoc(userDocRef(user.uid), { cards: [...known], updatedAt: Date.now() });
+      }
       render();
     } catch(e){
       console.warn("Error merging known cards on login", e);
