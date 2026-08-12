@@ -376,9 +376,6 @@
   <div class="card-scene" id="card-scene">
     <div class="card-inner" id="card-inner">
       <div class="card-face card-front">
-        <button class="speaker-btn" id="speaker-front" type="button" aria-label="Play pronunciation">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        </button>
         <div class="card-badge" id="front-badge"></div>
         <div class="card-char"  id="front-char"></div>
         <div class="card-hint">Tap to reveal pronunciation</div>
@@ -572,7 +569,6 @@ const frontBadge = document.getElementById("front-badge");
 const frontChar  = document.getElementById("front-char");
 const frontCheck = document.getElementById("front-check");
 const backChar   = document.getElementById("back-char");
-const speakerFront = document.getElementById("speaker-front");
 const speakerBack  = document.getElementById("speaker-back");
 const romajiPill = document.getElementById("romaji-pill");
 const romajiLbl  = document.getElementById("romaji-label");
@@ -810,7 +806,6 @@ function speakerClick(btn){
     btn.classList.remove("speaking"); void btn.offsetWidth; btn.classList.add("speaking");
   };
 }
-speakerFront.addEventListener("click", speakerClick(speakerFront));
 speakerBack.addEventListener("click", speakerClick(speakerBack));
 
 // ─── Touch swipe ─────────────────────────────────────────────────
