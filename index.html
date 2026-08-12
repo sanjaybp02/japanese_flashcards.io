@@ -638,8 +638,24 @@ themeToggleBtn.addEventListener("click", ()=>{
 applyTheme();
 
 // ─── State ───────────────────────────────────────────────────────
+const LOCAL_STORAGE_KEY = "kana-known-cards";
+
+function loadLocalKnown(){
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if(raw) return new Set(JSON.parse(raw));
+  } catch(e){ console.warn("Failed to load local known cards", e); }
+  return new Set();
+}
+
+function saveLocalKnown(){
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...known]));
+  } catch(e){ console.warn("Failed to save local known cards", e); }
+}
+
 let script="hiragana", deck=[...H], idx=0;
-let flipped=false, shuffled=false, known=new Set(), animating=false;
+let flipped=false, shuffled=false, known=loadLocalKnown(), animating=false;
 let currentUser=null, unsubSnapshot=null, syncEnabled=false;
 
 // ─── DOM ─────────────────────────────────────────────────────────
@@ -690,26 +706,22 @@ function scriptLabel(ch){
 // ─── Firestore sync ──────────────────────────────────────────────
 function userDocRef(uid){ return doc(db,"users",uid,"progress","known"); }
 
-async function loadKnown(uid){
-  try {
-    const snap = await getDoc(userDocRef(uid));
-    if(snap.exists()) known = new Set(snap.data().cards || []);
-    else known = new Set();
-    render();
-  } catch(e){ console.warn("Load error",e); }
-}
-
 function subscribeKnown(uid){
   if(unsubSnapshot) unsubSnapshot();
-  unsubSnapshot = onSnapshot(userDocRef(uid), snap => {
+  unsubSnapshot = onSnapshot(userDocRef(uid), { includeMetadataChanges: true }, snap => {
+    // Ignore local pending write snapshot echoes so rapid clicks aren't overwritten by old snapshots
+    if(snap.metadata.hasPendingWrites) return;
     if(snap.exists()){
-      known = new Set(snap.data().cards || []);
+      const remoteCards = snap.data().cards || [];
+      known = new Set(remoteCards);
+      saveLocalKnown();
       render();
     }
   }, err => console.warn("Snapshot error",err));
 }
 
 async function saveKnown(){
+  saveLocalKnown();
   if(!currentUser) return;
   try {
     await setDoc(userDocRef(currentUser.uid), { cards: [...known], updatedAt: Date.now() });
@@ -785,13 +797,23 @@ document.addEventListener("click", e=>{
 });
 
 // ─── Auth state ──────────────────────────────────────────────────
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   currentUser = user;
   syncEnabled = !!user;
   renderAuthBar();
   if(user){
     loginPrompt.classList.remove("visible");
-    loadKnown(user.uid);
+    // Merge local offline cards with remote Firestore cards on sign-in
+    try {
+      const snap = await getDoc(userDocRef(user.uid));
+      const remoteCards = snap.exists() ? (snap.data().cards || []) : [];
+      known = new Set([...known, ...remoteCards]);
+      saveLocalKnown();
+      await setDoc(userDocRef(user.uid), { cards: [...known], updatedAt: Date.now() });
+      render();
+    } catch(e){
+      console.warn("Error merging known cards on login", e);
+    }
     subscribeKnown(user.uid);
   } else {
     if(unsubSnapshot){ unsubSnapshot(); unsubSnapshot=null; }
@@ -944,13 +966,11 @@ markBtn.addEventListener("click",()=>{
   if(known.has(card.c)) known.delete(card.c); else known.add(card.c);
   render();
   if(nowKnown) celebrateKnown();
-
-  if(!currentUser){
-    // allow local mark, prompt login gently
-    if(!syncEnabled) loginPrompt.classList.add("visible");
-    return;
-  }
   saveKnown();
+
+  if(!currentUser && !syncEnabled){
+    loginPrompt.classList.add("visible");
+  }
 });
 
 shuffleBtn.addEventListener("click",()=>{
@@ -966,8 +986,16 @@ resetCancelBtn.addEventListener("click",()=>{
 resetConfirmBtn.addEventListener("click",()=>{
   resetPrompt.classList.remove("visible");
   idx=0;flipped=false;known=new Set();
-  deck=buildDeck(script,shuffled);render();
+  deck=buildDeck(script,shuffled);
+  saveLocalKnown();
+  render();
   if(currentUser) saveKnown();
+});
+window.addEventListener("storage", e => {
+  if(e.key === LOCAL_STORAGE_KEY){
+    known = loadLocalKnown();
+    render();
+  }
 });
 tabBtns.forEach(b=>b.addEventListener("click",()=>{
   script=b.dataset.script; deck=buildDeck(script,shuffled);

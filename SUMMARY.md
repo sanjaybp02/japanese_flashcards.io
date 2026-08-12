@@ -170,6 +170,11 @@ GitHub Actions workflow — no manual step needed there.
    pill was shrunk down. Fixed with real flex centering
    (`display:inline-flex; align-items:center; justify-content:center`)
    instead of relying on padding/line-height.
+10. **Mark Known sync improvements**:
+    - **Local Storage Fallback & Offline Persistence**: Progress is now saved to `localStorage` (`kana-known-cards`), preventing signed-out or offline progress loss.
+    - **Signed-out to Signed-in Merge**: Logging in merges local offline cards with remote Firestore progress instead of overwriting local progress.
+    - **Rapid Click & Snapshot Echo Protection**: Added `{ includeMetadataChanges: true }` and `hasPendingWrites` check to prevent local optimistic updates from being rolled back by snapshot echoes.
+    - **Multi-Tab Syncing**: Added `storage` event listener so changes in one tab immediately update all open tabs on the same device.
 
 ## Design decisions worth preserving
 
