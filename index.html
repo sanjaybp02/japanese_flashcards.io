@@ -67,6 +67,105 @@
     }
     html[data-theme="dark"] .nav-btn:disabled { background: rgba(255,255,255,.06); }
 
+    /* ── Mode Switcher ── */
+    .mode-toggle-container {
+      width: 100%; max-width: 440px;
+      display: flex; justify-content: center; margin-bottom: 14px;
+    }
+    .mode-toggle {
+      display: inline-flex; background: rgba(0,0,0,.22); border-radius: 999px; padding: 4px;
+      gap: 4px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.2);
+      transition: background 0.4s ease;
+    }
+    .mode-btn {
+      padding: 8px 18px; border-radius: 999px; border: none; cursor: pointer;
+      font-size: .82rem; font-weight: 700; font-family: inherit;
+      background: transparent; color: rgba(255,255,255,.75);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation; min-height: 38px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .mode-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,.12); }
+    .mode-btn.active {
+      background: #fff; color: #1a1a2e;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25); transform: scale(1.02);
+    }
+    html[data-theme="dark"] .mode-btn.active {
+      background: #38bdf8; color: #0f172a;
+    }
+
+    /* ── Revision / Focus Mode Theme Overrides ── */
+    body.mode-revision-active {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
+      transition: background 0.5s ease !important;
+    }
+    body.mode-revision-active .card-face {
+      background: #1e293b !important;
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 20px 50px rgba(0,0,0,.6);
+    }
+    body.mode-revision-active .card-char,
+    body.mode-revision-active .back-char {
+      color: #38bdf8 !important;
+      text-shadow: 0 0 24px rgba(56,189,248,.35);
+    }
+    body.mode-revision-active .mode-toggle {
+      background: rgba(15,23,42,.8);
+    }
+    body.mode-revision-active .mode-btn.active {
+      background: #38bdf8; color: #0f172a;
+      box-shadow: 0 0 16px rgba(56,189,248,.4);
+    }
+
+    /* In Revision Mode: hide hints on front face */
+    body.mode-revision-active .card-front .card-badge,
+    body.mode-revision-active .card-front .sub-content {
+      visibility: hidden;
+    }
+
+    /* ── Quiz Options UI (Back Face in Revision Mode) ── */
+    .quiz-container {
+      display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px;
+      margin-top: 10px;
+    }
+    .quiz-option-btn {
+      width: 100%; padding: 9px 14px; border-radius: 12px;
+      border: 2px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.06); color: #fff;
+      font-size: .88rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: space-between;
+      touch-action: manipulation;
+    }
+    .quiz-option-btn:hover:not(:disabled) {
+      background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.35);
+      transform: translateY(-1px);
+    }
+    .quiz-option-btn:active:not(:disabled) { transform: scale(0.98); }
+    .quiz-option-btn.correct {
+      background: #2ecc71 !important; border-color: #27ae60 !important;
+      color: #fff !important; animation: quizSuccessPop 0.35s ease;
+      box-shadow: 0 4px 14px rgba(46,204,113,.4);
+    }
+    .quiz-option-btn.incorrect {
+      background: #e74c3c !important; border-color: #c0392b !important;
+      color: #fff !important; animation: quizShake 0.4s ease;
+      box-shadow: 0 4px 14px rgba(231,76,60,.4);
+    }
+    .quiz-option-btn:disabled { cursor: default; }
+
+    @keyframes quizSuccessPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    @keyframes quizShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
     /* ── Auth bar (account button + dropdown) ── */
     .auth-bar { flex: 1; min-width: 0; display: flex; justify-content: flex-end; }
     .account-wrap { position: relative; }
@@ -378,6 +477,14 @@
     <p>Learn Japanese from scratch</p>
   </div>
 
+  <!-- Mode Switcher (Learn vs Revision) -->
+  <div class="mode-toggle-container">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-learn-btn" type="button">📖 Learn Mode</button>
+      <button class="mode-btn" id="mode-revision-btn" type="button">🎯 Revision Mode</button>
+    </div>
+  </div>
+
   <div class="tabs">
     <button class="tab-btn active" data-script="hiragana">ひ Hiragana</button>
     <button class="tab-btn"        data-script="katakana">カ Katakana</button>
@@ -410,9 +517,16 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
         </button>
         <div class="num-badge" id="back-num" style="display:none"></div>
-        <div class="card-badge">Pronunciation</div>
+        <div class="card-badge" id="back-badge">Pronunciation</div>
         <div class="back-char" id="back-char"></div>
-        <div class="sub-content"><div class="romaji-pill" id="romaji-pill"></div></div>
+        
+        <!-- Learn Mode romaji pill -->
+        <div class="sub-content" id="learn-back-content">
+          <div class="romaji-pill" id="romaji-pill"></div>
+        </div>
+
+        <!-- Revision Mode interactive 3-choice quiz -->
+        <div class="quiz-container" id="quiz-container" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -658,6 +772,124 @@ let script="hiragana", deck=[...H], idx=0;
 let flipped=false, shuffled=false, known=loadLocalKnown(), animating=false;
 let currentUser=null, unsubSnapshot=null, syncEnabled=false;
 
+// Mode State & Quiz Engine
+let appMode = "learn"; // "learn" | "revision"
+let currentQuiz = null; // { options: [{text, isCorrect}], answered: false, selectedIndex: null }
+
+const modeLearnBtn = document.getElementById("mode-learn-btn");
+const modeRevisionBtn = document.getElementById("mode-revision-btn");
+const quizContainer = document.getElementById("quiz-container");
+const learnBackContent = document.getElementById("learn-back-content");
+const backBadge = document.getElementById("back-badge");
+
+function generateQuizOptions(card) {
+  const correctText = card.r.toUpperCase();
+  const pool = deck.length >= 3 ? deck : [...H, ...K, ...KJ, ...N];
+  const distractors = [];
+  const usedTexts = new Set([correctText]);
+  
+  const shuffledPool = shuffleArr(pool);
+  for (const item of shuffledPool) {
+    const itemText = item.r.toUpperCase();
+    if (!usedTexts.has(itemText)) {
+      usedTexts.add(itemText);
+      distractors.push(itemText);
+      if (distractors.length === 2) break;
+    }
+  }
+  
+  const options = shuffleArr([
+    { text: correctText, isCorrect: true },
+    ...distractors.map(text => ({ text, isCorrect: false }))
+  ]);
+  
+  return { options, answered: false, selectedIndex: null };
+}
+
+function selectQuizOption(index) {
+  if (!currentQuiz || currentQuiz.answered) return;
+  currentQuiz.answered = true;
+  currentQuiz.selectedIndex = index;
+  
+  const selectedOpt = currentQuiz.options[index];
+  if (selectedOpt.isCorrect) {
+    const card = deck[idx];
+    if (!known.has(card.c)) {
+      known.add(card.c);
+      saveKnown();
+      celebrateKnown();
+    }
+  }
+  render();
+}
+
+function renderQuizUI() {
+  if (appMode === "revision") {
+    learnBackContent.style.display = "none";
+    quizContainer.style.display = "flex";
+    backBadge.textContent = "Select Correct Answer";
+    
+    // Hide speaker icon until answered in revision mode
+    if (currentQuiz && !currentQuiz.answered) {
+      speakerBack.style.display = "none";
+      backNum.style.display = "none";
+    } else {
+      speakerBack.style.display = "flex";
+      if (deck[idx].n) backNum.style.display = "inline-flex";
+    }
+
+    if (!currentQuiz) {
+      currentQuiz = generateQuizOptions(deck[idx]);
+    }
+
+    quizContainer.innerHTML = "";
+    currentQuiz.options.forEach((opt, index) => {
+      const btn = document.createElement("button");
+      btn.className = "quiz-option-btn";
+      btn.type = "button";
+      btn.textContent = `${index + 1}. ${opt.text}`;
+      
+      if (currentQuiz.answered) {
+        btn.disabled = true;
+        if (opt.isCorrect) btn.classList.add("correct");
+        else if (index === currentQuiz.selectedIndex) btn.classList.add("incorrect");
+      } else {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectQuizOption(index);
+        });
+      }
+      quizContainer.appendChild(btn);
+    });
+  } else {
+    // Learn mode
+    quizContainer.style.display = "none";
+    learnBackContent.style.display = "flex";
+    speakerBack.style.display = "flex";
+    backBadge.textContent = "Pronunciation";
+  }
+}
+
+modeLearnBtn.addEventListener("click", () => {
+  if (appMode === "learn") return;
+  appMode = "learn";
+  document.body.classList.remove("mode-revision-active");
+  modeLearnBtn.classList.add("active");
+  modeRevisionBtn.classList.remove("active");
+  currentQuiz = null;
+  render();
+});
+
+modeRevisionBtn.addEventListener("click", () => {
+  if (appMode === "revision") return;
+  appMode = "revision";
+  document.body.classList.add("mode-revision-active");
+  modeRevisionBtn.classList.add("active");
+  modeLearnBtn.classList.remove("active");
+  currentQuiz = null;
+  render();
+});
+
 // ─── DOM ─────────────────────────────────────────────────────────
 const authBar    = document.getElementById("auth-bar");
 const authLoad   = document.getElementById("auth-loading");
@@ -890,6 +1122,8 @@ function render(){
   });
   shuffleBtn.classList.toggle("on",shuffled);
   shuffleBtn.style.color=shuffled?col.accent:"";
+
+  renderQuizUI();
 }
 
 // ─── Navigate ────────────────────────────────────────────────────
@@ -900,7 +1134,7 @@ function goTo(dir){
   animating=true;
   cardInner.classList.add("animating");
   setTimeout(()=>{
-    flipped=false; idx=next; render();
+    flipped=false; idx=next; currentQuiz=null; render();
     cardInner.classList.remove("animating");
     setTimeout(()=>{animating=false;},50);
   },180);
@@ -975,7 +1209,7 @@ markBtn.addEventListener("click",()=>{
 
 shuffleBtn.addEventListener("click",()=>{
   shuffled=!shuffled; deck=buildDeck(script,shuffled);
-  idx=0;flipped=false;render();
+  idx=0;flipped=false;currentQuiz=null;render();
 });
 resetBtn.addEventListener("click",()=>{
   resetPrompt.classList.add("visible");
@@ -985,7 +1219,7 @@ resetCancelBtn.addEventListener("click",()=>{
 });
 resetConfirmBtn.addEventListener("click",()=>{
   resetPrompt.classList.remove("visible");
-  idx=0;flipped=false;known=new Set();
+  idx=0;flipped=false;known=new Set();currentQuiz=null;
   deck=buildDeck(script,shuffled);
   saveLocalKnown();
   render();
@@ -999,12 +1233,17 @@ window.addEventListener("storage", e => {
 });
 tabBtns.forEach(b=>b.addEventListener("click",()=>{
   script=b.dataset.script; deck=buildDeck(script,shuffled);
-  idx=0;flipped=false;render();
+  idx=0;flipped=false;currentQuiz=null;render();
 }));
 document.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight")goTo(1);
   if(e.key==="ArrowLeft")goTo(-1);
   if(e.key===" "||e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();flipped=!flipped;render();}
+  if(appMode==="revision" && flipped && currentQuiz && !currentQuiz.answered){
+    if(e.key==="1") selectQuizOption(0);
+    if(e.key==="2") selectQuizOption(1);
+    if(e.key==="3") selectQuizOption(2);
+  }
 });
 
 // ─── Init ────────────────────────────────────────────────────────

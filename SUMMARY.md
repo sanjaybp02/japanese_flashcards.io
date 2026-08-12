@@ -67,6 +67,9 @@ GitHub Actions workflow — no manual step needed there.
   - Both (92, Hiragana+Katakana concatenated) — purple
   - Numbers (12: ichi–kyuu, juu, hyaku, sen = 1–9, 10, 100, 1000) — orange
   - Kanji (42 foundational JLPT N5 chars with readings & meanings) — emerald green
+- **Learn vs. Revision Modes**:
+  - **Learn Mode**: Standard study mode with card flip, hint prompts, romaji pill, and pronunciation speaker.
+  - **Revision Mode**: Distraction-free Midnight Focus theme (`#0f172a` slate gradient with cyan glow). Hides hints on card front. On flip, presents an interactive **3-choice multiple-choice quiz** (1 correct + 2 random distractors). Selecting correct turns green (`#2ecc71`) with pop animation and auto-marks known; selecting incorrect turns red (`#e74c3c`) with shake effect while highlighting correct answer. Supports keyboard selection (`1`, `2`, `3`).
 - **Dark mode**: toggle button (top-left), detects system preference on
   first visit, then remembers explicit choice via `localStorage`
   (`kana-theme` key). Inline pre-body script applies it before first paint
