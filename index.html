@@ -100,7 +100,7 @@
       background: #38bdf8; color: #0f172a;
     }
 
-    /* ── Revision / Focus Mode Theme Overrides ── */
+    /* ── Revision / Focus Mode Theme Overrides & Alignment ── */
     body.mode-revision-active {
       background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
       transition: background 0.5s ease !important;
@@ -109,11 +109,23 @@
       background: #1e293b !important;
       border: 1px solid rgba(255,255,255,.1);
       box-shadow: 0 20px 50px rgba(0,0,0,.6);
+      padding: 14px 16px !important;
+      overflow: hidden;
     }
-    body.mode-revision-active .card-char,
+    body.mode-revision-active .card-char {
+      color: #38bdf8 !important;
+      text-shadow: 0 0 24px rgba(56,189,248,.35);
+    }
     body.mode-revision-active .back-char {
       color: #38bdf8 !important;
       text-shadow: 0 0 24px rgba(56,189,248,.35);
+      font-size: clamp(2.8rem, 9vw, 4rem) !important;
+      margin: 2px 0 4px !important;
+    }
+    body.mode-revision-active .card-back .card-badge {
+      margin-bottom: 2px !important;
+      padding: 3px 10px !important;
+      font-size: .62rem !important;
     }
     body.mode-revision-active .mode-toggle {
       background: rgba(15,23,42,.8);
@@ -131,17 +143,17 @@
 
     /* ── Quiz Options UI (Back Face in Revision Mode) ── */
     .quiz-container {
-      display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px;
-      margin-top: 10px;
+      display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 360px;
+      margin-top: 4px;
     }
     .quiz-option-btn {
-      width: 100%; padding: 9px 14px; border-radius: 12px;
-      border: 2px solid rgba(255,255,255,.15);
+      width: 100%; padding: 7px 12px; border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,.15);
       background: rgba(255,255,255,.06); color: #fff;
-      font-size: .88rem; font-weight: 700; font-family: inherit;
+      font-size: .82rem; font-weight: 700; font-family: inherit;
       cursor: pointer; transition: all 0.2s ease;
       display: flex; align-items: center; justify-content: space-between;
-      touch-action: manipulation;
+      touch-action: manipulation; min-height: 32px;
     }
     .quiz-option-btn:hover:not(:disabled) {
       background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.35);
