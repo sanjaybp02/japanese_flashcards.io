@@ -202,7 +202,6 @@
     html[data-theme="dark"] .card-char,
     html[data-theme="dark"] .back-char { color: #f0f0f2; }
     html[data-theme="dark"] .card-hint { color: #82828f; }
-    html[data-theme="dark"] .romaji-label { color: #92929e; }
     html[data-theme="dark"] .login-box { background: #22222f; }
     html[data-theme="dark"] .login-box h2 { color: #f0f0f2; }
     html[data-theme="dark"] .login-box p { color: #a5a5b0; }
@@ -214,7 +213,6 @@
       color: #fff; font-size: clamp(1.2rem,5vw,1.6rem); font-weight: 700; letter-spacing: .12em;
       box-shadow: 0 4px 12px rgba(0,0,0,.2);
     }
-    .romaji-label { color: #888; font-size: .8rem; margin-top: 8px; }
 
     .swipe-hint { color: rgba(255,255,255,.45); font-size: .72rem; margin-bottom: 10px; display: none; }
     @media (hover:none) { .swipe-hint { display: block; } }
@@ -404,7 +402,6 @@
         <div class="card-badge">Pronunciation</div>
         <div class="back-char" id="back-char"></div>
         <div class="romaji-pill" id="romaji-pill"></div>
-        <div class="romaji-label" id="romaji-label"></div>
       </div>
     </div>
   </div>
@@ -596,7 +593,6 @@ const backChar   = document.getElementById("back-char");
 const speakerBack  = document.getElementById("speaker-back");
 const backNum    = document.getElementById("back-num");
 const romajiPill = document.getElementById("romaji-pill");
-const romajiLbl  = document.getElementById("romaji-label");
 const posLbl     = document.getElementById("pos-label");
 const knownLbl   = document.getElementById("known-label");
 const posBar     = document.getElementById("pos-bar");
@@ -775,7 +771,6 @@ function render(){
   backChar.textContent=card.c;
   romajiPill.textContent=card.r.toUpperCase();
   romajiPill.style.background=col.accent;
-  romajiLbl.textContent=`Romanization: ${card.r}`;
 
   // Numeral badge (1, 10, 100, ...) sits next to the character on the
   // back only, alongside the romaji answer -- keeps the front a clean
