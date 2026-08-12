@@ -177,6 +177,19 @@
     }
     .back-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(3rem,10vw,4.5rem); line-height:1; color:#1a1a2e; }
 
+    .speaker-btn {
+      position: absolute; top: 14px; left: 16px;
+      width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(0,0,0,.06); color: #666; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .1s; touch-action: manipulation;
+    }
+    .speaker-btn:hover { background: rgba(0,0,0,.12); }
+    .speaker-btn:active { transform: scale(0.9); }
+    .speaker-btn.speaking { animation: knownPop .3s ease; }
+    html[data-theme="dark"] .speaker-btn { background: rgba(255,255,255,.08); color: #ccc; }
+    html[data-theme="dark"] .speaker-btn:hover { background: rgba(255,255,255,.15); }
+
     /* ── Dark theme surfaces ── */
     html[data-theme="dark"] .card-face { background: #1e1e2e; box-shadow: 0 16px 48px rgba(0,0,0,.5); }
     html[data-theme="dark"] .card-char,
@@ -363,6 +376,9 @@
   <div class="card-scene" id="card-scene">
     <div class="card-inner" id="card-inner">
       <div class="card-face card-front">
+        <button class="speaker-btn" id="speaker-front" type="button" aria-label="Play pronunciation">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </button>
         <div class="card-badge" id="front-badge"></div>
         <div class="card-char"  id="front-char"></div>
         <div class="card-hint">Tap to reveal pronunciation</div>
@@ -371,6 +387,9 @@
         </div>
       </div>
       <div class="card-face card-back">
+        <button class="speaker-btn" id="speaker-back" type="button" aria-label="Play pronunciation">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </button>
         <div class="card-badge">Pronunciation</div>
         <div class="back-char"  id="back-char"></div>
         <div class="romaji-pill" id="romaji-pill"></div>
@@ -553,6 +572,8 @@ const frontBadge = document.getElementById("front-badge");
 const frontChar  = document.getElementById("front-char");
 const frontCheck = document.getElementById("front-check");
 const backChar   = document.getElementById("back-char");
+const speakerFront = document.getElementById("speaker-front");
+const speakerBack  = document.getElementById("speaker-back");
 const romajiPill = document.getElementById("romaji-pill");
 const romajiLbl  = document.getElementById("romaji-label");
 const posLbl     = document.getElementById("pos-label");
@@ -774,10 +795,32 @@ function goTo(dir){
   },180);
 }
 
+// ─── Pronunciation (Web Speech API) ────────────────────────────────
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel(); // stop any utterance already playing
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ja-JP"; u.rate = 0.8;
+  speechSynthesis.speak(u);
+}
+function speakerClick(btn){
+  return e=>{
+    e.stopPropagation();
+    speak(deck[idx].c);
+    btn.classList.remove("speaking"); void btn.offsetWidth; btn.classList.add("speaking");
+  };
+}
+speakerFront.addEventListener("click", speakerClick(speakerFront));
+speakerBack.addEventListener("click", speakerClick(speakerBack));
+
 // ─── Touch swipe ─────────────────────────────────────────────────
 let tx=0,ty=0,tt=0,touchHandled=false;
-cardScene.addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;tt=Date.now();},{passive:true});
+cardScene.addEventListener("touchstart",e=>{
+  if(e.target.closest(".speaker-btn")) return;
+  tx=e.touches[0].clientX;ty=e.touches[0].clientY;tt=Date.now();
+},{passive:true});
 cardScene.addEventListener("touchend",e=>{
+  if(e.target.closest(".speaker-btn")) return; // let the speaker button handle its own tap
   const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty, dt=Date.now()-tt;
   if(dt<300&&Math.abs(dx)<10&&Math.abs(dy)<10){
     touchHandled=true; e.preventDefault();
@@ -791,7 +834,8 @@ cardScene.addEventListener("touchend",e=>{
 // ─── Button events ───────────────────────────────────────────────
 // Mobile browsers fire a synthetic click after touchend; touchHandled
 // (plus the preventDefault above) stops that from double-toggling the flip.
-cardScene.addEventListener("click",()=>{
+cardScene.addEventListener("click",e=>{
+  if(e.target.closest(".speaker-btn")) return;
   if(touchHandled){ touchHandled=false; return; }
   flipped=!flipped;render();
 });
