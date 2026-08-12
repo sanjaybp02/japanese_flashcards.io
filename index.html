@@ -170,9 +170,14 @@
     }
     .card-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(5rem,16vw,7rem); line-height:1; color:#1a1a2e; }
     .card-hint { color: #bbb; font-size: .78rem; margin-top: 12px; }
-    .char-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
     .num-badge {
-      font-family: 'Inter', sans-serif; font-size: 1.15rem; font-weight: 800;
+      /* .card-back carries its own rotateY(180deg) (to counter the flip
+         and keep text readable), which mirrors absolutely-positioned
+         children horizontally -- so 'left' here is what actually lands
+         on the visual right edge. Confirmed empirically against the
+         front's known-check badge, which needs no such compensation. */
+      position: absolute; top: 14px; left: 16px;
+      font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 800;
       padding: 4px 11px; border-radius: 10px; line-height: 1.4;
     }
     .known-check {
@@ -400,11 +405,9 @@
         <button class="speaker-btn" id="speaker-back" type="button" aria-label="Play pronunciation">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
         </button>
+        <div class="num-badge" id="back-num" style="display:none"></div>
         <div class="card-badge">Pronunciation</div>
-        <div class="char-row">
-          <div class="back-char" id="back-char"></div>
-          <div class="num-badge" id="back-num" style="display:none"></div>
-        </div>
+        <div class="back-char" id="back-char"></div>
         <div class="romaji-pill" id="romaji-pill"></div>
         <div class="romaji-label" id="romaji-label"></div>
       </div>
