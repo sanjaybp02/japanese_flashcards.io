@@ -169,7 +169,16 @@
       letter-spacing: .1em; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
     }
     .card-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(5rem,16vw,7rem); line-height:1; color:#1a1a2e; }
-    .card-hint { color: #bbb; font-size: .78rem; margin-top: 12px; }
+    .card-hint { color: #bbb; font-size: .78rem; }
+    /* Same fixed-height wrapper on both card faces for whatever sits
+       below the character (hint text vs. the bigger romaji pill), so
+       the flex-centered group's total height matches on both faces --
+       otherwise the differing content height shifts the character's
+       vertical position between front and back. */
+    .sub-content {
+      height: clamp(56px,15vw,72px); margin-top: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
     .num-badge {
       position: absolute; top: 14px; right: 16px;
       font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 800;
@@ -209,7 +218,7 @@
     html[data-theme="dark"] .modal-btn-cancel { background: #33334a; color: #eee; }
     html[data-theme="dark"] .modal-btn-cancel:hover { background: #3d3d58; }
     .romaji-pill {
-      margin-top: 14px; padding: 10px 32px; border-radius: 999px;
+      padding: 10px 32px; border-radius: 999px;
       color: #fff; font-size: clamp(1.4rem,6vw,2rem); font-weight: 700; letter-spacing: .12em;
       box-shadow: 0 4px 12px rgba(0,0,0,.2);
     }
@@ -389,7 +398,7 @@
       <div class="card-face card-front">
         <div class="card-badge" id="front-badge"></div>
         <div class="card-char" id="front-char"></div>
-        <div class="card-hint">Tap to reveal pronunciation</div>
+        <div class="sub-content"><div class="card-hint">Tap to reveal pronunciation</div></div>
         <div class="known-check" id="front-check" style="display:none">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
@@ -401,7 +410,7 @@
         <div class="num-badge" id="back-num" style="display:none"></div>
         <div class="card-badge">Pronunciation</div>
         <div class="back-char" id="back-char"></div>
-        <div class="romaji-pill" id="romaji-pill"></div>
+        <div class="sub-content"><div class="romaji-pill" id="romaji-pill"></div></div>
       </div>
     </div>
   </div>
