@@ -67,34 +67,34 @@
     }
     html[data-theme="dark"] .nav-btn:disabled { background: rgba(255,255,255,.06); }
 
-    /* ── Auth bar & top-right group ── */
-    .auth-bar { min-width: 0; display: flex; justify-content: flex-end; }
-    .top-right-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    /* ── Auth bar & top-right horizontal group ── */
+    .auth-bar { flex-shrink: 0; display: flex; justify-content: flex-end; }
+    .top-right-group { display: flex; align-items: center; gap: 8px; }
     .account-wrap { position: relative; }
 
-    /* ── Mode Switcher (Compact Icon + Micro Label) ── */
+    /* ── Mode Switcher (Ultra-Compact, Row Aligned Beside Account Circle) ── */
     .mode-toggle-compact {
-      display: inline-flex; background: rgba(0,0,0,.22); border-radius: 999px; padding: 2px;
+      display: inline-flex; background: rgba(0,0,0,.25); border-radius: 999px; padding: 2px;
       gap: 2px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
-      transition: background 0.4s ease;
+      transition: background 0.4s ease; align-items: center;
     }
     .mode-btn {
-      padding: 4px 9px; border-radius: 999px; border: none; cursor: pointer;
+      padding: 3px 8px; border-radius: 999px; border: none; cursor: pointer;
       background: transparent; color: rgba(255,255,255,.75);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      touch-action: manipulation; min-height: 32px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+      touch-action: manipulation; min-height: 26px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 3px;
     }
-    .mode-btn svg { width: 14px; height: 14px; flex-shrink: 0; stroke-width: 2.2; }
+    .mode-btn svg { width: 11px; height: 11px; flex-shrink: 0; stroke-width: 2.2; }
     .mode-micro-label {
-      font-size: 0.55rem; font-weight: 800; letter-spacing: 0.04em;
+      font-size: 0.52rem; font-weight: 800; letter-spacing: 0.03em;
       line-height: 1; text-transform: uppercase;
     }
     .mode-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,.12); }
     .mode-btn.active {
       background: #fff; color: #1a1a2e;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25); transform: scale(1.02);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25); transform: scale(1.02);
     }
     html[data-theme="dark"] .mode-btn.active {
       background: #38bdf8; color: #0f172a;
@@ -479,16 +479,12 @@
 </head>
 <body>
 
-  <!-- Top row: theme toggle + auth bar & mode toggle -->
+  <!-- Top row: theme toggle (left) + mode toggle & auth bar (right, in a single horizontal row) -->
   <div class="top-row">
     <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
-    <div class="top-right-wrap">
-      <div class="auth-bar" id="auth-bar">
-        <div id="auth-loading" class="auth-loading-wrap">
-          <span class="auth-spinner"><span></span><span></span><span></span></span>
-        </div>
-      </div>
-      <!-- Mode Switcher (Icons + Micro text below circle icon) -->
+    
+    <div class="top-right-group">
+      <!-- Mode Switcher (Ultra-compact, placed in row beside account button) -->
       <div class="mode-toggle-compact">
         <button class="mode-btn active" id="mode-learn-btn" type="button" title="Learn Mode">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -498,6 +494,12 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
           <span class="mode-micro-label">Revision</span>
         </button>
+      </div>
+
+      <div class="auth-bar" id="auth-bar">
+        <div id="auth-loading" class="auth-loading-wrap">
+          <span class="auth-spinner"><span></span><span></span><span></span></span>
+        </div>
       </div>
     </div>
   </div>
