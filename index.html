@@ -643,10 +643,6 @@ function renderAuthBar(){
       initials.textContent = src.trim().charAt(0).toUpperCase();
       btn.appendChild(initials);
     }
-    const dot = document.createElement("span");
-    dot.className = "sync-dot";
-    btn.appendChild(dot);
-
     const menu = document.createElement("div");
     menu.className = "account-menu";
     const email = document.createElement("div");
@@ -661,16 +657,24 @@ function renderAuthBar(){
 
     btn.addEventListener("click", e=>{ e.stopPropagation(); menu.classList.toggle("open"); });
 
+    // The sync dot sits OUTSIDE .account-btn (as a sibling in the wrapper),
+    // not inside it -- .account-btn has overflow:hidden to clip the avatar
+    // photo into a circle, which was also clipping the dot since it's
+    // positioned to poke past the button's own edge.
+    const dot = document.createElement("span");
+    dot.className = "sync-dot";
+
     wrap.appendChild(btn);
+    wrap.appendChild(dot);
     wrap.appendChild(menu);
   } else {
     btn.setAttribute("aria-label","Sign in to sync");
     btn.innerHTML = ICON_PERSON;
     const dot = document.createElement("span");
     dot.className = "sync-dot offline";
-    btn.appendChild(dot);
-    btn.addEventListener("click", ()=>{ loginPrompt.classList.add("visible"); });
     wrap.appendChild(btn);
+    wrap.appendChild(dot);
+    btn.addEventListener("click", ()=>{ loginPrompt.classList.add("visible"); });
   }
 
   authBar.appendChild(wrap);
