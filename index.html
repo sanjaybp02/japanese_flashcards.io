@@ -38,7 +38,7 @@
       background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
       transition: background 0.5s ease;
     }
-    html[data-theme="dark"] body { background: linear-gradient(135deg, #3a0d0a 0%, #5c150f 100%); }
+    html[data-theme="dark"] body { background: linear-gradient(135deg, #170f11 0%, #221216 100%); }
 
     /* ── Top row (theme toggle + auth bar) ── */
     .top-row {
@@ -488,10 +488,13 @@ const COLORS_LIGHT = {
   katakana: { bg:"#1a5276", light:"#2980b9", accent:"#1a5276" },
   both:     { bg:"#6c3483", light:"#8e44ad", accent:"#6c3483" }
 };
+// Near-black with just a whisper of the script's hue, rather than a fully
+// saturated dark gradient — reads as a premium dark UI instead of "murky".
+// The accent color (bright) carries the color identity on badges/pills/icons.
 const COLORS_DARK = {
-  hiragana: { bg:"#3a0d0a", light:"#5c150f", accent:"#ff6b5b" },
-  katakana: { bg:"#0a1f30", light:"#123049", accent:"#5dade2" },
-  both:     { bg:"#26123a", light:"#3a1a57", accent:"#c39bd3" }
+  hiragana: { bg:"#170f11", light:"#221216", accent:"#ff6b5b" },
+  katakana: { bg:"#0e1318", light:"#141b22", accent:"#5dade2" },
+  both:     { bg:"#150f18", light:"#1c1420", accent:"#c39bd3" }
 };
 
 // ─── Theme (light/dark) ────────────────────────────────────────────
@@ -713,16 +716,26 @@ function goTo(dir){
 }
 
 // ─── Touch swipe ─────────────────────────────────────────────────
-let tx=0,ty=0,tt=0;
+let tx=0,ty=0,tt=0,touchHandled=false;
 cardScene.addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;tt=Date.now();},{passive:true});
 cardScene.addEventListener("touchend",e=>{
   const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty, dt=Date.now()-tt;
-  if(dt<300&&Math.abs(dx)<10&&Math.abs(dy)<10){flipped=!flipped;render();}
-  else if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5&&dt<500){goTo(dx<0?1:-1);}
-},{passive:true});
+  if(dt<300&&Math.abs(dx)<10&&Math.abs(dy)<10){
+    touchHandled=true; e.preventDefault();
+    flipped=!flipped;render();
+  } else if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5&&dt<500){
+    touchHandled=true; e.preventDefault();
+    goTo(dx<0?1:-1);
+  }
+},{passive:false});
 
 // ─── Button events ───────────────────────────────────────────────
-cardScene.addEventListener("click",()=>{flipped=!flipped;render();});
+// Mobile browsers fire a synthetic click after touchend; touchHandled
+// (plus the preventDefault above) stops that from double-toggling the flip.
+cardScene.addEventListener("click",()=>{
+  if(touchHandled){ touchHandled=false; return; }
+  flipped=!flipped;render();
+});
 prevBtn.addEventListener("click",()=>goTo(-1));
 nextBtn.addEventListener("click",()=>goTo(1));
 
