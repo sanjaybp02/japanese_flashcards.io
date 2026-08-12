@@ -728,7 +728,7 @@ function render(){
   frontBadge.style.cssText=`background:${col.accent}20;color:${col.accent}`;
   frontBadge.textContent=`${card.g} · ${scriptLabel(card.c)}`;
   frontChar.textContent=card.c;
-  frontCheck.style.display=known.has(card.c)?"block":"none";
+  frontCheck.style.display=known.has(card.c)?"flex":"none";
 
   backChar.textContent=card.c;
   romajiPill.textContent=card.r.toUpperCase();
