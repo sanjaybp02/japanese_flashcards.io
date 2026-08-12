@@ -673,7 +673,7 @@ function render(){
   frontBadge.style.cssText=`background:${col.accent}20;color:${col.accent}`;
   frontBadge.textContent=`${card.g} · ${scriptLabel(card.c)}`;
   frontChar.textContent=card.c;
-  frontCheck.style.display=known.has(idx)?"block":"none";
+  frontCheck.style.display=known.has(card.c)?"block":"none";
 
   backChar.textContent=card.c;
   romajiPill.textContent=card.r.toUpperCase();
@@ -684,13 +684,17 @@ function render(){
   prevBtn.style.color=col.accent; nextBtn.style.color=col.accent;
   prevBtn.disabled=idx===0; nextBtn.disabled=idx===deck.length-1;
 
-  markBtn.classList.toggle("known",known.has(idx));
-  markBtn.textContent=known.has(idx)?"✓ Known":"Mark Known";
+  markBtn.classList.toggle("known",known.has(card.c));
+  markBtn.textContent=known.has(card.c)?"✓ Known":"Mark Known";
 
+  // Known count/percentage are scoped to characters actually in the
+  // current deck, so switching tabs doesn't inflate the count with
+  // known cards from a different script.
+  const knownInDeck = deck.filter(c=>known.has(c.c)).length;
   const pct=Math.round(((idx+1)/deck.length)*100);
-  const kPct=Math.round((known.size/deck.length)*100);
+  const kPct=Math.round((knownInDeck/deck.length)*100);
   posLbl.textContent=`${idx+1} / ${deck.length}`;
-  knownLbl.textContent=`✓ ${known.size} known (${kPct}%)`;
+  knownLbl.textContent=`✓ ${knownInDeck} known (${kPct}%)`;
   posBar.style.width=pct+"%"; knownBar.style.width=kPct+"%";
 
   tabBtns.forEach(b=>{
@@ -748,8 +752,9 @@ function celebrateKnown(){
 }
 
 markBtn.addEventListener("click",()=>{
-  const nowKnown = !known.has(idx);
-  if(known.has(idx)) known.delete(idx); else known.add(idx);
+  const card = deck[idx];
+  const nowKnown = !known.has(card.c);
+  if(known.has(card.c)) known.delete(card.c); else known.add(card.c);
   render();
   if(nowKnown) celebrateKnown();
 
