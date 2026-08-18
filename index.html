@@ -33,10 +33,11 @@
     body {
       font-family: 'Inter', sans-serif;
       min-height: 100dvh;
-      display: flex; flex-direction: column; align-items: center;
-      padding: max(env(safe-area-inset-top),20px) 16px env(safe-area-inset-bottom,20px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: max(env(safe-area-inset-top),16px) 16px env(safe-area-inset-bottom,16px);
       background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
       transition: background 0.5s ease;
+      overflow-x: hidden;
     }
     html[data-theme="dark"] body { background: linear-gradient(135deg, #170f11 0%, #221216 100%); }
 
@@ -46,9 +47,6 @@
       display: flex; justify-content: space-between; align-items: center;
       gap: 10px; margin-bottom: 10px;
     }
-    /* Toggle button previews the *destination* theme: dark surface while
-       in light mode (offering dark), bright surface while in dark mode
-       (offering light). Colors are also set inline by applyTheme(). */
     .theme-toggle-btn {
       width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; border: none;
       background: rgba(30,30,46,.92); font-size: 1.05rem; cursor: pointer;
@@ -62,146 +60,28 @@
       background: rgba(255,255,255,.9); box-shadow: 0 4px 12px rgba(0,0,0,.15);
     }
     html[data-theme="dark"] .theme-toggle-btn:hover { background: #fff; }
-    html[data-theme="dark"] .nav-btn {
-      background: rgba(30,30,46,.92); box-shadow: 0 4px 12px rgba(0,0,0,.5);
+
+    /* ── Top Left Action Button Group ── */
+    .top-left-group { display: flex; align-items: center; gap: 6px; }
+    .top-action-btn {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; border: none;
+      background: rgba(30,30,46,.92); color: #cfd3e8; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,.5);
+      transition: transform .1s, background .2s, color .2s; touch-action: manipulation;
     }
-    html[data-theme="dark"] .nav-btn:disabled { background: rgba(255,255,255,.06); }
+    .top-action-btn:hover { background: #1a1a28; color: #fff; }
+    .top-action-btn:active { transform: scale(0.9); }
+    html[data-theme="dark"] .top-action-btn {
+      background: rgba(255,255,255,.9); color: #333; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    html[data-theme="dark"] .top-action-btn:hover { background: #fff; color: #000; }
 
     /* ── Auth bar & top-right horizontal group ── */
     .auth-bar { flex-shrink: 0; display: flex; justify-content: flex-end; }
     .top-right-group { display: flex; align-items: center; gap: 8px; }
     .account-wrap { position: relative; }
 
-    /* ── Mode Switcher (Ultra-Compact, Row Aligned Beside Account Circle) ── */
-    .mode-toggle-compact {
-      display: inline-flex; background: rgba(0,0,0,.25); border-radius: 999px; padding: 2px;
-      gap: 1px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      box-shadow: inset 0 1px 3px rgba(0,0,0,.2);
-      transition: background 0.4s ease; align-items: center;
-    }
-    .mode-btn {
-      padding: 2px 6px; border-radius: 999px; border: none; cursor: pointer;
-      background: transparent; color: rgba(255,255,255,.75);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      touch-action: manipulation; min-height: 22px;
-      display: inline-flex; align-items: center; justify-content: center; gap: 2px;
-    }
-    .mode-btn svg { width: 10px; height: 10px; flex-shrink: 0; stroke-width: 2.2; }
-    .mode-micro-label {
-      font-size: 0.48rem; font-weight: 800; letter-spacing: 0.03em;
-      line-height: 1; text-transform: uppercase;
-    }
-    .mode-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,.12); }
-    .mode-btn.active {
-      background: #fff; color: #1a1a2e;
-      box-shadow: 0 2px 6px rgba(0,0,0,.25); transform: scale(1.02);
-    }
-    html[data-theme="dark"] .mode-btn.active {
-      background: #38bdf8; color: #0f172a;
-    }
-
-    /* ── Revision / Focus Mode Theme Overrides & Dark Mode ── */
-    body.mode-revision-active {
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
-      transition: background 0.5s ease !important;
-    }
-    body.mode-revision-active .card-face {
-      background: #ffffff !important;
-      border: 1px solid rgba(0,0,0,.08);
-      box-shadow: 0 20px 50px rgba(0,0,0,.22);
-      padding: 14px 16px !important;
-      overflow: hidden;
-    }
-    body.mode-revision-active .card-char,
-    body.mode-revision-active .back-char {
-      color: #0284c7 !important;
-      text-shadow: 0 0 20px rgba(2,132,199,.2);
-      font-size: clamp(2.8rem, 9vw, 4rem) !important;
-      margin: 2px 0 4px !important;
-    }
-    body.mode-revision-active .card-back .card-badge {
-      margin-bottom: 2px !important;
-      padding: 3px 10px !important;
-      font-size: .62rem !important;
-    }
-    body.mode-revision-active .mode-toggle-compact {
-      background: rgba(0,0,0,.35);
-    }
-    body.mode-revision-active .mode-btn.active {
-      background: #0284c7; color: #fff;
-      box-shadow: 0 0 12px rgba(2,132,199,.4);
-    }
-
-    /* Dark Mode in Revision Mode */
-    html[data-theme="dark"] body.mode-revision-active {
-      background: linear-gradient(135deg, #090d16 0%, #0f172a 100%) !important;
-    }
-    html[data-theme="dark"] body.mode-revision-active .card-face {
-      background: #1e293b !important;
-      border: 1px solid rgba(255,255,255,.1);
-      box-shadow: 0 20px 50px rgba(0,0,0,.6);
-    }
-    html[data-theme="dark"] body.mode-revision-active .card-char,
-    html[data-theme="dark"] body.mode-revision-active .back-char {
-      color: #38bdf8 !important;
-      text-shadow: 0 0 24px rgba(56,189,248,.35);
-    }
-    html[data-theme="dark"] body.mode-revision-active .mode-btn.active {
-      background: #38bdf8; color: #0f172a;
-      box-shadow: 0 0 16px rgba(56,189,248,.4);
-    }
-
-    /* In Revision Mode: hide hints on front face */
-    body.mode-revision-active .card-front .card-badge,
-    body.mode-revision-active .card-front .sub-content {
-      visibility: hidden;
-    }
-
-    /* ── Quiz Options UI (Back Face in Revision Mode) ── */
-    .quiz-container {
-      display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 360px;
-      margin-top: 4px;
-    }
-    .quiz-option-btn {
-      width: 100%; padding: 7px 12px; border-radius: 10px;
-      border: 1.5px solid rgba(255,255,255,.15);
-      background: rgba(255,255,255,.06); color: #fff;
-      font-size: .82rem; font-weight: 700; font-family: inherit;
-      cursor: pointer; transition: all 0.2s ease;
-      display: flex; align-items: center; justify-content: space-between;
-      touch-action: manipulation; min-height: 32px;
-    }
-    .quiz-option-btn:hover:not(:disabled) {
-      background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.35);
-      transform: translateY(-1px);
-    }
-    .quiz-option-btn:active:not(:disabled) { transform: scale(0.98); }
-    .quiz-option-btn.correct {
-      background: #2ecc71 !important; border-color: #27ae60 !important;
-      color: #fff !important; animation: quizSuccessPop 0.35s ease;
-      box-shadow: 0 4px 14px rgba(46,204,113,.4);
-    }
-    .quiz-option-btn.incorrect {
-      background: #e74c3c !important; border-color: #c0392b !important;
-      color: #fff !important; animation: quizShake 0.4s ease;
-      box-shadow: 0 4px 14px rgba(231,76,60,.4);
-    }
-    .quiz-option-btn:disabled { cursor: default; }
-
-    @keyframes quizSuccessPop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.04); }
-      100% { transform: scale(1); }
-    }
-    @keyframes quizShake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
-    }
-
-    /* ── Auth bar (account button + dropdown) ── */
-    .auth-bar { flex: 1; min-width: 0; display: flex; justify-content: flex-end; }
-    .account-wrap { position: relative; }
     .account-btn {
       width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
       background: rgba(255,255,255,.9); color: #333; padding: 0; overflow: hidden;
@@ -215,8 +95,7 @@
     .sync-dot {
       position: absolute; bottom: -1px; right: -1px;
       width: 11px; height: 11px; border-radius: 50%; background: #2ecc71;
-      border: 2px solid rgba(255,255,255,.9);
-      animation: pulse 2s infinite;
+      border: 2px solid rgba(255,255,255,.9); animation: pulse 2s infinite;
     }
     .sync-dot.offline { background: #e67e22; animation: none; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -236,44 +115,89 @@
     .account-menu .menu-email {
       font-size: .78rem; color: #666; word-break: break-all; margin-bottom: 12px; line-height: 1.4;
     }
-    html[data-theme="dark"] .account-menu { background: #22222f; }
-    html[data-theme="dark"] .account-menu .menu-email { color: #a5a5b0; }
+    html[data-theme="dark"] .account-menu { background: #111827; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 16px 48px rgba(0,0,0,0.8); }
+    html[data-theme="dark"] .account-menu .menu-email { color: #cbd5e1; }
 
-    /* ── Loading spinner (auth bar) ── */
-    .auth-loading-wrap { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
-    .auth-spinner { display: flex; gap: 4px; align-items: center; }
-    .auth-spinner span {
-      width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.65);
-      animation: spinnerPulse 1s infinite ease-in-out;
+    /* ── Mode Switcher ── */
+    .mode-toggle-compact {
+      display: inline-flex; background: rgba(0,0,0,.25); border-radius: 999px; padding: 2px;
+      gap: 1px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.2); transition: background 0.4s ease; align-items: center;
     }
-    .auth-spinner span:nth-child(2) { animation-delay: .15s; }
-    .auth-spinner span:nth-child(3) { animation-delay: .3s; }
-    @keyframes spinnerPulse { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+    .mode-btn {
+      padding: 2px 6px; border-radius: 999px; border: none; cursor: pointer;
+      background: transparent; color: rgba(255,255,255,.75);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation; min-height: 22px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+    }
+    .mode-btn svg { width: 10px; height: 10px; flex-shrink: 0; stroke-width: 2.2; }
+    .mode-micro-label { font-size: 0.48rem; font-weight: 800; letter-spacing: 0.03em; line-height: 1; text-transform: uppercase; }
+    .mode-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,.12); }
+    .mode-btn.active { background: #fff; color: #1a1a2e; box-shadow: 0 2px 6px rgba(0,0,0,.25); transform: scale(1.02); }
+    html[data-theme="dark"] .mode-btn.active { background: #38bdf8; color: #0f172a; }
+
+    /* ── Revision Mode ── */
+    body.mode-revision-active { background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important; transition: background 0.5s ease !important; }
+    body.mode-revision-active .card-face { background: #ffffff !important; border: 1px solid rgba(0,0,0,.08); box-shadow: 0 20px 50px rgba(0,0,0,.22); padding: 14px 16px !important; overflow: hidden; }
+    body.mode-revision-active .card-char,
+    body.mode-revision-active .back-char { color: #0284c7 !important; text-shadow: 0 0 20px rgba(2,132,199,.2); font-size: clamp(2.8rem, 9vw, 4rem) !important; margin: 2px 0 4px !important; }
+    body.mode-revision-active .card-back .card-badge { margin-bottom: 2px !important; padding: 3px 10px !important; font-size: .62rem !important; }
+    body.mode-revision-active .mode-toggle-compact { background: rgba(0,0,0,.35); }
+    body.mode-revision-active .mode-btn.active { background: #0284c7; color: #fff; box-shadow: 0 0 12px rgba(2,132,199,.4); }
+
+    html[data-theme="dark"] body.mode-revision-active { background: linear-gradient(135deg, #090d16 0%, #0f172a 100%) !important; }
+    html[data-theme="dark"] body.mode-revision-active .card-face { background: #1e293b !important; border: 1px solid rgba(255,255,255,.1); box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+    html[data-theme="dark"] body.mode-revision-active .card-char,
+    html[data-theme="dark"] body.mode-revision-active .back-char { color: #38bdf8 !important; text-shadow: 0 0 24px rgba(56,189,248,.35); }
+    html[data-theme="dark"] body.mode-revision-active .mode-btn.active { background: #38bdf8; color: #0f172a; box-shadow: 0 0 16px rgba(56,189,248,.4); }
+
+    body.mode-revision-active .card-front .card-badge,
+    body.mode-revision-active .card-front .sub-content { visibility: hidden; }
+
+    /* ── Quiz Options UI ── */
+    .quiz-container { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 360px; margin-top: 4px; }
+    .quiz-option-btn {
+      width: 100%; padding: 6px 12px; border-radius: 10px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #0f172a;
+      font-size: .82rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: flex-start; gap: 8px; touch-action: manipulation; min-height: 32px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.04);
+    }
+    .quiz-option-btn:hover:not(:disabled) { background: #e2e8f0; border-color: #0284c7; transform: translateY(-1px); }
+    .quiz-option-btn:active:not(:disabled) { transform: scale(0.98); }
+    html[data-theme="dark"] .quiz-option-btn { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); color: #f8fafc; box-shadow: none; }
+    html[data-theme="dark"] .quiz-option-btn:hover:not(:disabled) { background: rgba(255,255,255,.16); border-color: #38bdf8; }
+    .quiz-option-btn.correct { background: #2ecc71 !important; border-color: #27ae60 !important; color: #fff !important; animation: quizSuccessPop 0.35s ease; box-shadow: 0 4px 14px rgba(46,204,113,.4); }
+    .quiz-option-btn.incorrect { background: #e74c3c !important; border-color: #c0392b !important; color: #fff !important; animation: quizShake 0.4s ease; box-shadow: 0 4px 14px rgba(231,76,60,.4); }
+    .quiz-option-btn:disabled { cursor: default; }
+
+    @keyframes quizSuccessPop { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+    @keyframes quizShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
 
     /* ── Header ── */
-    .header { text-align: center; margin-bottom: 16px; }
+    .header { text-align: center; margin-bottom: 14px; }
     .header h1 { color: #fff; font-size: clamp(1.4rem,5vw,2rem); font-weight: 700; letter-spacing:.05em; text-shadow:0 2px 8px rgba(0,0,0,.25); }
-    .header p  { color: rgba(255,255,255,.6); font-size: .78rem; margin-top: 3px; }
+    .header p { color: rgba(255,255,255,.7); font-size: .78rem; margin-top: 3px; font-weight: 500; }
 
-    /* ── Tabs (Resized to Small) ── */
+    /* ── Tabs ── */
     .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; }
     .tab-btn {
       padding: 6px 13px; border-radius: 999px; border: none; cursor: pointer;
       font-size: .75rem; font-weight: 600; font-family: inherit;
-      background: rgba(255,255,255,.2); color: #fff;
-      transition: background .2s, transform .15s, box-shadow .2s;
+      background: rgba(255,255,255,.2); color: #fff; transition: background .2s, transform .15s, box-shadow .2s;
       touch-action: manipulation; min-height: 34px;
     }
     .tab-btn:hover:not(.active) { background: rgba(255,255,255,.32); }
-    .tab-btn.active { background: #fff; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    .tab-btn.active { background: #fff; color: #1a1a2e; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
 
     /* ── Progress ── */
     .progress-wrap { width: 100%; max-width: 440px; margin-bottom: 14px; }
     .progress-labels { display: flex; justify-content: space-between; color: rgba(255,255,255,.85); font-size: .75rem; font-weight: 600; margin-bottom: 5px; }
+    .progress-badges { display: flex; align-items: center; gap: 6px; }
     .bar-track { height: 7px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; margin-bottom: 4px; }
-    .bar-fill  { height: 100%; border-radius: 999px; background: #fff; transition: width .35s ease; box-shadow: 0 0 8px rgba(255,255,255,.4); }
+    .bar-fill { height: 100%; border-radius: 999px; background: #fff; transition: width .35s ease; box-shadow: 0 0 8px rgba(255,255,255,.4); }
     .bar-known-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
-    .bar-known-fill  { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2ecc71, #27ae60); transition: width .35s ease; box-shadow: 0 0 8px rgba(46,204,113,.4); }
+    .bar-known-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2ecc71, #27ae60); transition: width .35s ease; box-shadow: 0 0 8px rgba(46,204,113,.4); }
 
     /* ── Card ── */
     .card-scene {
@@ -284,8 +208,7 @@
     }
     .card-inner {
       position: relative; width: 100%; height: 100%;
-      transform-style: preserve-3d;
-      transition: transform .5s ease, opacity .18s ease;
+      transform-style: preserve-3d; transition: transform .5s ease, opacity .18s ease;
     }
     .card-inner.flipped { transform: rotateY(180deg); }
     .card-inner.animating { opacity: 0; }
@@ -296,194 +219,147 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
     }
     .card-back { transform: rotateY(180deg); }
-    .card-badge {
-      font-size: .68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
-    }
+    .card-badge { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px; }
     .card-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(5rem,16vw,7rem); line-height:1; color:#1a1a2e; }
-    .card-hint { color: #bbb; font-size: .78rem; }
-    /* Same fixed-height wrapper on both card faces for whatever sits
-       below the character (hint text vs. the bigger romaji pill), so
-       the flex-centered group's total height matches on both faces --
-       otherwise the differing content height shifts the character's
-       vertical position between front and back. */
-    .sub-content {
-      height: clamp(32px,8vw,40px); margin-top: 12px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .num-badge {
-      position: absolute; top: 14px; right: 16px;
-      font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 800;
-      padding: 4px 11px; border-radius: 10px; line-height: 1.4;
-    }
-    .known-check {
-      position: absolute; top: 14px; right: 16px;
-      width: 26px; height: 26px; border-radius: 50%;
-      background: #2ecc71; color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,.2);
-    }
+    .card-hint { color: #888; font-size: .78rem; }
+    .sub-content { height: clamp(32px,8vw,40px); margin-top: 12px; display: flex; align-items: center; justify-content: center; }
+    .num-badge { position: absolute; top: 14px; right: 16px; font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 800; padding: 4px 11px; border-radius: 10px; line-height: 1.4; }
+    .known-check { position: absolute; top: 14px; right: 16px; width: 26px; height: 26px; border-radius: 50%; background: #2ecc71; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
     .back-char { font-family:'Noto Sans JP',sans-serif; font-size:clamp(5rem,16vw,7rem); line-height:1; color:#1a1a2e; }
 
     .speaker-btn {
-      position: absolute; top: 14px; left: 16px;
-      width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
-      background: rgba(0,0,0,.06); color: #666; padding: 0;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .2s, transform .1s; touch-action: manipulation;
+      position: absolute; top: 14px; left: 16px; width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(0,0,0,.06); color: #666; padding: 0; display: flex; align-items: center; justify-content: center; transition: background .2s, transform .1s; touch-action: manipulation;
     }
     .speaker-btn:hover { background: rgba(0,0,0,.12); }
     .speaker-btn:active { transform: scale(0.9); }
     .speaker-btn.speaking { animation: knownPop .3s ease; }
-    html[data-theme="dark"] .speaker-btn { background: rgba(255,255,255,.08); color: #ccc; }
-    html[data-theme="dark"] .speaker-btn:hover { background: rgba(255,255,255,.15); }
 
-    /* ── Dark theme surfaces ── */
     html[data-theme="dark"] .card-face { background: #1e1e2e; box-shadow: 0 16px 48px rgba(0,0,0,.5); }
     html[data-theme="dark"] .card-char,
     html[data-theme="dark"] .back-char { color: #f0f0f2; }
     html[data-theme="dark"] .card-hint { color: #82828f; }
-    html[data-theme="dark"] .login-box { background: #22222f; }
-    html[data-theme="dark"] .login-box h2 { color: #f0f0f2; }
-    html[data-theme="dark"] .login-box p { color: #a5a5b0; }
-    html[data-theme="dark"] .lp-skip { color: #6b6b78; }
-    html[data-theme="dark"] .modal-btn-cancel { background: #33334a; color: #eee; }
-    html[data-theme="dark"] .modal-btn-cancel:hover { background: #3d3d58; }
-    .romaji-pill {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 6px 18px; border-radius: 999px;
-      color: #fff; font-size: clamp(0.85rem,3.5vw,1.15rem); font-weight: 700; letter-spacing: .1em;
-      box-shadow: 0 4px 12px rgba(0,0,0,.2);
-    }
+    html[data-theme="dark"] .speaker-btn { background: rgba(255,255,255,.08); color: #ccc; }
+    html[data-theme="dark"] .speaker-btn:hover { background: rgba(255,255,255,.15); }
 
-    .swipe-hint { color: rgba(255,255,255,.45); font-size: .72rem; margin-bottom: 10px; display: none; }
+    .romaji-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 18px; border-radius: 999px; color: #fff; font-size: clamp(0.85rem,3.5vw,1.15rem); font-weight: 700; letter-spacing: .1em; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    .swipe-hint { color: rgba(255,255,255,.5); font-size: .72rem; margin-bottom: 10px; display: none; }
     @media (hover:none) { .swipe-hint { display: block; } }
 
     /* ── Controls ── */
     .controls { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
-    .nav-btn {
-      width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
-      font-weight: 700; font-family: inherit;
-      background: rgba(255,255,255,.9); transition: opacity .2s, transform .1s;
-      box-shadow: 0 4px 12px rgba(0,0,0,.15); touch-action: manipulation;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .nav-btn { width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; font-weight: 700; font-family: inherit; background: rgba(255,255,255,.9); transition: opacity .2s, transform .1s; box-shadow: 0 4px 12px rgba(0,0,0,.15); touch-action: manipulation; display: flex; align-items: center; justify-content: center; }
     .nav-btn:active:not(:disabled) { transform: scale(0.93); }
     .nav-btn:disabled { background: rgba(255,255,255,.2); color: rgba(255,255,255,.4); cursor: default; box-shadow: none; }
-    .mark-btn {
-      padding: 12px 22px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4);
-      background: rgba(255,255,255,.2); color: #fff; font-size: .875rem;
-      font-weight: 600; font-family: inherit; cursor: pointer;
-      transition: background .2s, box-shadow .2s, transform .1s;
-      touch-action: manipulation; min-height: 48px;
-      box-shadow: 0 4px 14px rgba(0,0,0,.12);
-    }
+    html[data-theme="dark"] .nav-btn { background: rgba(30,30,46,.92); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+    html[data-theme="dark"] .nav-btn:disabled { background: rgba(255,255,255,.06); color: rgba(255,255,255,.25); }
+
+    .mark-btn { padding: 12px 22px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.2); color: #fff; font-size: .875rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s, box-shadow .2s, transform .1s; touch-action: manipulation; min-height: 48px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
     .mark-btn:hover:not(:disabled) { background: rgba(255,255,255,.32); }
     .mark-btn.known { background: #2ecc71; border-color: #27ae60; }
     .mark-btn.known:hover { background: #27ae60; }
     .mark-btn:active { transform: scale(0.96); }
-    .mark-btn:disabled { opacity: .5; cursor: default; }
-    .mark-btn.pop, .known-check.pop { animation: knownPop .35s ease; }
-    @keyframes knownPop { 0%{transform:scale(1)} 45%{transform:scale(1.15)} 100%{transform:scale(1)} }
 
     .secondary { display: flex; gap: 10px; margin-bottom: 14px; }
-    .sec-btn {
-      padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer;
-      background: rgba(255,255,255,.2); color: #fff; font-size: .8rem;
-      font-weight: 600; font-family: inherit; transition: background .2s, box-shadow .2s;
-      touch-action: manipulation; min-height: 44px;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-    }
+    .sec-btn { padding: 10px 18px; border-radius: 999px; border: none; cursor: pointer; background: rgba(255,255,255,.2); color: #fff; font-size: .8rem; font-weight: 600; font-family: inherit; transition: background .2s, box-shadow .2s; touch-action: manipulation; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .sec-btn:hover:not(.on) { background: rgba(255,255,255,.32); }
-    .sec-btn.on { background: rgba(255,255,255,.9); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    .sec-btn.on { background: rgba(255,255,255,.9); color: #1a1a2e; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
     .sec-btn:active { transform: scale(0.95); }
 
-    .kbd-hint { color: rgba(255,255,255,.4); font-size: .68rem; display: none; }
+    .kbd-hint { color: rgba(255,255,255,.5); font-size: .68rem; display: none; }
     @media (hover:hover) { .kbd-hint { display: block; } }
 
-    .footer {
-      margin-top: 20px; letter-spacing: .03em;
-      font-size: .8rem; font-weight: 500; color: rgba(255,255,255,.85);
-      text-shadow: 0 1px 4px rgba(0,0,0,.25);
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px;
-    }
-    .footer .footer-name {
-      color: #fff; font-weight: 800; letter-spacing: .04em; line-height: 1;
-      padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.18);
-    }
-    .footer .footer-social {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-      color: rgba(255,255,255,.85); background: rgba(255,255,255,.12);
-      transition: background .2s, color .2s;
-    }
+    .footer { margin-top: 16px; letter-spacing: .03em; font-size: .8rem; font-weight: 500; color: rgba(255,255,255,.85); text-shadow: 0 1px 4px rgba(0,0,0,.25); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+    .footer .footer-name { color: #fff; font-weight: 800; letter-spacing: .04em; line-height: 1; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.18); }
+    .footer .footer-social { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; color: rgba(255,255,255,.85); background: rgba(255,255,255,.12); transition: background .2s, color .2s; }
     .footer .footer-social:hover { background: rgba(255,255,255,.28); color: #fff; }
 
-    /* ── Login prompt overlay ── */
-    .login-prompt {
-      position: fixed; inset: 0; background: rgba(0,0,0,.55);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 100; padding: 24px;
-      opacity: 0; pointer-events: none; transition: opacity .3s;
-    }
+    /* ── Login prompt overlay & Modals ── */
+    .login-prompt { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .3s; }
     .login-prompt.visible { opacity: 1; pointer-events: all; }
-    .login-box {
-      background: #fff; border-radius: 24px; padding: 32px 28px;
-      max-width: 360px; width: 100%; text-align: center;
-      box-shadow: 0 24px 80px rgba(0,0,0,.3);
-    }
-    .login-box .lp-icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 14px;
-      background: #c0392b20; color: #c0392b;
-    }
-    html[data-theme="dark"] .login-box .lp-icon { background: #ff6b5b20; color: #ff6b5b; }
-    .login-box h2 { font-size: 1.2rem; color: #1a1a2e; margin-bottom: 8px; }
-    .login-box p  { font-size: .85rem; color: #666; margin-bottom: 24px; line-height: 1.5; }
-    .google-btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; padding: 13px 20px; border-radius: 999px;
-      background: #fff; border: 2px solid #ddd; cursor: pointer;
-      font-size: .95rem; font-weight: 600; font-family: inherit; color: #333;
-      transition: box-shadow .2s, background .2s; touch-action: manipulation;
-    }
-    .google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); background: #f9f9f9; }
-    .google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-    .lp-skip {
-      margin-top: 14px; background: none; border: none; color: #aaa;
-      font-size: .8rem; cursor: pointer; font-family: inherit; text-decoration: underline;
-    }
+    .login-box { background: #fff; border-radius: 24px; padding: 32px 28px; max-width: 360px; width: 100%; text-align: center; color: #0f172a; box-shadow: 0 24px 80px rgba(0,0,0,.3); border: 1px solid rgba(0,0,0,.08); }
+    .login-box .lp-icon { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 14px; background: #c0392b20; color: #c0392b; }
 
-    /* ── Modal action buttons (reset confirm) ── */
+    /* ── Uniform Dark Theme Design System for All Modals ── */
+    html[data-theme="dark"] .login-box { background: #111827 !important; color: #f8fafc !important; border: 1px solid rgba(255,255,255,0.15) !important; box-shadow: 0 24px 80px rgba(0,0,0,0.8) !important; }
+    html[data-theme="dark"] .login-box .lp-icon { background: rgba(56,189,248,0.18); color: #38bdf8; }
+    html[data-theme="dark"] .login-box h2 { color: #ffffff !important; font-weight: 800; }
+    html[data-theme="dark"] .login-box p { color: #cbd5e1 !important; }
+
+    .login-box h2 { font-size: 1.2rem; color: #0f172a; margin-bottom: 8px; font-weight: 800; }
+    .login-box p { font-size: .85rem; color: #475569; margin-bottom: 24px; line-height: 1.5; font-weight: 500; }
+
+    .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 13px 20px; border-radius: 999px; background: #fff; border: 2px solid #cbd5e1; cursor: pointer; font-size: .95rem; font-weight: 700; font-family: inherit; color: #0f172a; transition: box-shadow .2s, background .2s; touch-action: manipulation; }
+    .google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); background: #f8fafc; }
+    html[data-theme="dark"] .google-btn { background: #0f172a; color: #f8fafc; border-color: #334155; }
+    html[data-theme="dark"] .google-btn:hover { background: #1e293b; }
+
+    .lp-skip { margin-top: 14px; background: none; border: none; color: #64748b; font-size: .8rem; cursor: pointer; font-family: inherit; text-decoration: underline; font-weight: 600; }
+    html[data-theme="dark"] .lp-skip { color: #94a3b8 !important; }
+
     .modal-actions { display: flex; gap: 10px; }
-    .modal-btn {
-      flex: 1; padding: 12px 16px; border-radius: 999px; border: 2px solid transparent;
-      font-weight: 700; font-family: inherit; font-size: .9rem; cursor: pointer;
-      transition: background .2s, transform .1s; touch-action: manipulation;
-    }
+    .modal-btn { flex: 1; padding: 12px 16px; border-radius: 999px; border: 1.5px solid transparent; font-weight: 700; font-family: inherit; font-size: .9rem; cursor: pointer; transition: background .2s, transform .1s; touch-action: manipulation; }
     .modal-btn:active { transform: scale(0.96); }
-    .modal-btn-cancel { background: #f2f2f2; color: #333; }
-    .modal-btn-cancel:hover { background: #e6e6e6; }
+    .modal-btn-cancel { background: #e2e8f0; color: #0f172a; border-color: #cbd5e1; }
+    .modal-btn-cancel:hover { background: #cbd5e1; }
     .modal-btn-danger { background: #c0392b; color: #fff; }
     .modal-btn-danger:hover { background: #a93226; }
 
-    .menu-signout-btn {
-      width: 100%; padding: 7px 14px; border-radius: 999px; border: none; cursor: pointer;
-      background: #f2f2f2; color: #333; font-weight: 700; font-family: inherit; font-size: .78rem;
-      transition: background .2s; touch-action: manipulation;
-    }
-    .menu-signout-btn:hover { background: #e6e6e6; }
-    .menu-signout-btn:active { transform: scale(0.96); }
-    html[data-theme="dark"] .menu-signout-btn { background: #33334a; color: #eee; }
-    html[data-theme="dark"] .menu-signout-btn:hover { background: #3d3d58; }
+    .kbd-grid { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; text-align: left; margin: 16px 0; }
+    .kbd-key { background: #f1f5f9; color: #0284c7; font-weight: 800; font-family: monospace; padding: 3px 8px; border-radius: 6px; font-size: 0.76rem; border: 1px solid #cbd5e1; display: inline-block; text-align: center; min-width: 28px; }
+    .kbd-desc { font-size: 0.85rem; font-weight: 600; color: #334155; display: flex; align-items: center; }
+    html[data-theme="dark"] .kbd-key { background: rgba(255,255,255,0.12) !important; color: #38bdf8 !important; border-color: rgba(255,255,255,0.22) !important; }
+    html[data-theme="dark"] .kbd-desc { color: #f8fafc !important; }
 
-    /* ── Keyboard focus visibility ── */
-    button:focus-visible {
-      outline: 3px solid rgba(255,255,255,.9); outline-offset: 2px;
-    }
-    .login-box button:focus-visible {
-      outline: 3px solid #c0392b; outline-offset: 2px;
-    }
+    /* ── Character Grid / Progress Chart Modal ── */
+    .grid-modal-box { width: 92vw !important; max-width: 480px !important; height: 88vh !important; max-height: 640px !important; display: flex; flex-direction: column; padding: 14px 14px 10px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.4); justify-content: space-between; }
+    .grid-modal-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; text-align: center; gap: 4px; }
+    html[data-theme="dark"] .grid-modal-header { border-bottom-color: rgba(255,255,255,0.12); }
+    .grid-modal-header h2 { font-size: 1.05rem; color: inherit; font-weight: 700; text-align: center; }
+
+    .grid-filter-pills { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
+    .grid-filter-pill { font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.12); background: rgba(0,0,0,0.04); color: inherit; cursor: pointer; transition: all 0.15s ease; user-select: none; }
+    .grid-filter-pill.active { background: #0284c7; color: #fff; border-color: #0284c7; box-shadow: 0 2px 6px rgba(2,132,199,0.3); }
+    html[data-theme="dark"] .grid-filter-pill { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); color: #cbd5e1; }
+    html[data-theme="dark"] .grid-filter-pill.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; box-shadow: 0 2px 8px rgba(56,189,248,0.4); }
+
+    .grid-matrix { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 2px; overflow: hidden !important; width: 100%; height: 100%; align-content: stretch; flex: 1; margin-bottom: 4px; }
+    .grid-tile { border-radius: 8px; border: 1.5px solid rgba(0,0,0,0.08); background: rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.15s ease; user-select: none; touch-action: manipulation; padding: 1px; min-width: 0; min-height: 0; height: 100%; }
+    .grid-tile:hover { transform: translateY(-1px); border-color: #0284c7; background: rgba(2,132,199,0.08); }
+    .grid-tile:active { transform: scale(0.94); }
+    .grid-tile-char { font-family: 'Noto Sans JP', sans-serif; font-size: clamp(1rem, 2.5vh, 1.45rem); font-weight: 800; color: #1a1a2e; line-height: 1; }
+    .grid-tile-romaji { font-size: clamp(0.44rem, 1vh, 0.58rem); font-weight: 700; color: #666; text-transform: uppercase; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .grid-tile.known { background: #2ecc71 !important; border-color: #27ae60 !important; box-shadow: 0 2px 6px rgba(46,204,113,0.3); }
+    .grid-tile.known .grid-tile-char, .grid-tile.known .grid-tile-romaji { color: #fff !important; }
+    .grid-tile-check { position: absolute; top: 1px; right: 2px; font-size: 0.45rem; font-weight: 900; color: #fff; }
+
+    .grid-tile.current-card { outline: 2.5px solid #0284c7; outline-offset: -1px; animation: currentPulse 2s infinite ease-in-out; }
+    html[data-theme="dark"] .grid-tile.current-card { outline-color: #38bdf8; }
+    @keyframes currentPulse { 0%, 100% { outline-color: #0284c7; } 50% { outline-color: #38bdf8; } }
+
+    html[data-theme="dark"] .grid-tile { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .grid-tile-char { color: #f8fafc; }
+    html[data-theme="dark"] .grid-tile-romaji { color: #94a3b8; }
+    html[data-theme="dark"] .grid-tile:hover { border-color: #38bdf8; background: rgba(56,189,248,0.15); }
+
+    .grid-footer { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.08); margin-top: auto; flex-shrink: 0; width: 100%; }
+    html[data-theme="dark"] .grid-footer { border-top-color: rgba(255,255,255,0.12); }
+    #grid-stats-label { font-size: 0.78rem; font-weight: 700; color: inherit; opacity: 0.88; text-align: center; }
+
+    .grid-close-btn-center { width: auto !important; min-width: 100px; padding: 5px 18px !important; font-size: 0.78rem; font-weight: 700; border-radius: 999px; cursor: pointer; background: rgba(0,0,0,0.06); color: inherit; border: 1px solid rgba(0,0,0,0.12); transition: all 0.2s ease; margin: 0 auto !important; display: inline-block; }
+    .grid-close-btn-center:hover { background: rgba(0,0,0,0.12); transform: translateY(-1px); }
+    html[data-theme="dark"] .modal-btn-cancel,
+    html[data-theme="dark"] .grid-close-btn-center { background: rgba(255,255,255,0.12) !important; border: 1px solid rgba(255,255,255,0.22) !important; color: #ffffff !important; font-weight: 700; }
+    html[data-theme="dark"] .modal-btn-cancel:hover,
+    html[data-theme="dark"] .grid-close-btn-center:hover { background: rgba(255,255,255,0.2) !important; border-color: rgba(255,255,255,0.35) !important; }
+
+    /* ── Confetti & Toast System ── */
+    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1200; }
+    .toast-container { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1300; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; width: 90%; max-width: 360px; }
+    .toast-pill { background: rgba(15, 23, 42, 0.92); color: #fff; border: 1px solid rgba(255, 255, 255, 0.18); padding: 8px 18px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: inline-flex; align-items: center; gap: 8px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .toast-pill.toast-out { animation: toastOut 0.25s ease forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-16px) scale(0.88); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
 
     @media (max-height:500px) and (orientation:landscape) {
       body { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0 24px; padding: 10px 16px; }
@@ -495,9 +371,21 @@
 </head>
 <body>
 
-  <!-- Top row: theme toggle (left) + mode toggle & auth bar (right, in a single horizontal row) -->
+  <!-- HTML5 Canvas for Confetti Fireworks -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Reusable Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Top row: theme toggle, sound toggle, kbd help (left) + mode toggle & auth bar (right) -->
   <div class="top-row">
-    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+    <div class="top-left-group">
+      <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+      <button class="top-action-btn" id="sound-toggle-btn" type="button" aria-label="Toggle sound FX" title="Toggle sound FX"></button>
+      <button class="top-action-btn" id="kbd-help-btn" type="button" aria-label="Keyboard Shortcuts" title="Keyboard Shortcuts (?)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M18 12h.01M8 16h8"/></svg>
+      </button>
+    </div>
     
     <div class="top-right-group">
       <!-- Mode Switcher (Ultra-compact, placed in row beside account button) -->
@@ -535,8 +423,14 @@
 
   <div class="progress-wrap">
     <div class="progress-labels">
-      <span id="pos-label">1 / 46</span>
-      <span id="known-label">✓ 0 known (0%)</span>
+      <div class="progress-badges">
+        <span id="pos-label">1 / 46</span>
+        <span class="streak-badge" id="streak-badge" style="display:none">🔥 0 streak</span>
+      </div>
+      <div class="progress-badges">
+        <span class="mastery-badge" id="mastery-badge" style="display:none">🏆 Mastered</span>
+        <span id="known-label">✓ 0 known (0%)</span>
+      </div>
     </div>
     <div class="bar-track"><div class="bar-fill" id="pos-bar" style="width:2%"></div></div>
     <div class="bar-known-track"><div class="bar-known-fill" id="known-bar" style="width:0%"></div></div>
@@ -584,6 +478,10 @@
   </div>
 
   <div class="secondary">
+    <button class="sec-btn" id="grid-btn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Grid
+    </button>
     <button class="sec-btn" id="shuffle-btn">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="17" x2="9" y2="7"/><line x1="15" y1="7" x2="21" y2="17"/><polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="15" y2="9"/><polyline points="15 21 21 21 21 15"/><line x1="21" y1="21" x2="15" y2="15"/><line x1="3" y1="7" x2="9" y2="17"/></svg>
       Shuffle
@@ -630,11 +528,49 @@
   <div class="login-prompt" id="reset-prompt">
     <div class="login-box">
       <div class="lp-icon">↺</div>
-      <h2>Reset all progress?</h2>
-      <p>This clears every "Known" card in this deck. This can't be undone.</p>
+      <h2 id="reset-modal-title">Reset progress?</h2>
+      <p id="reset-modal-desc">This clears every "Known" card in this deck. This can't be undone.</p>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" id="reset-cancel-btn">Cancel</button>
         <button class="modal-btn modal-btn-danger" id="reset-confirm-btn">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="login-prompt" id="kbd-prompt">
+    <div class="login-box">
+      <div class="lp-icon">⌨️</div>
+      <h2>Keyboard Shortcuts</h2>
+      <div class="kbd-grid">
+        <span class="kbd-key">Space</span><span class="kbd-desc">Flip card</span>
+        <span class="kbd-key">← / →</span><span class="kbd-desc">Previous / Next card</span>
+        <span class="kbd-key">↑ / ↓</span><span class="kbd-desc">Flip card</span>
+        <span class="kbd-key">1 / 2 / 3</span><span class="kbd-desc">Select quiz option</span>
+        <span class="kbd-key">K / M</span><span class="kbd-desc">Mark / Unmark Known</span>
+        <span class="kbd-key">G</span><span class="kbd-desc">Open Grid Progress Chart</span>
+        <span class="kbd-key">S</span><span class="kbd-desc">Play pronunciation</span>
+        <span class="kbd-key">?</span><span class="kbd-desc">Toggle shortcut guide</span>
+      </div>
+      <button class="modal-btn modal-btn-cancel" id="kbd-close-btn" style="width:100%">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Character Grid / Progress Chart Modal -->
+  <div class="login-prompt" id="grid-prompt">
+    <div class="login-box grid-modal-box">
+      <div class="grid-modal-header">
+        <h2 id="grid-modal-title">Progress Chart</h2>
+        <div class="grid-filter-pills" id="grid-filter-pills">
+          <button class="grid-filter-pill active" data-filter="all" type="button">All</button>
+          <button class="grid-filter-pill" data-filter="known" type="button">Mastered ✓</button>
+          <button class="grid-filter-pill" data-filter="unmastered" type="button">Unmastered</button>
+        </div>
+      </div>
+      <div class="grid-matrix" id="grid-matrix"></div>
+      <div class="grid-footer">
+        <span id="grid-stats-label">✓ 0 / 0 Mastered</span>
+        <button class="grid-close-btn-center" id="grid-close-bottom-btn" type="button">Close</button>
       </div>
     </div>
   </div>
@@ -745,6 +681,14 @@ const KJ = [
   {c:"見",r:"miru, ken · see/look",g:"Actions"}
 ];
 
+const KANJI_EMOJIS = {
+  "日":"☀️","月":"🌙","木":"🌳","水":"💧","火":"🔥","土":"🪴","金":"🪙","天":"☁️","空":"🌌","雨":"🌧️",
+  "山":"⛰️","川":"🌊","田":"🌾","人":"👤","女":"👩","男":"👨","子":"👶","目":"👁️","口":"👄","手":"✋",
+  "足":"🦶","年":"📅","上":"⬆️","下":"⬇️","中":"🎯","大":"🐘","小":"🐭","左":"⬅️","右":"➡️",
+  "東":"🌅","西":"🌇","南":"🏝️","北":"❄️","本":"📖","生":"🌱","先":"⏩","学":"🎓","校":"🏫","車":"🚗",
+  "電":"⚡","食":"🍱","見":"👀"
+};
+
 // bg/light drive the page background gradient; accent is used for
 // text/icons that sit on the (light or dark) card surface, so it
 // needs to stay legible against that surface in each theme.
@@ -791,6 +735,142 @@ themeToggleBtn.addEventListener("click", ()=>{
 });
 applyTheme();
 
+// ─── Sound FX Engine (Web Audio API) ──────────────────────────────
+const soundToggleBtn = document.getElementById("sound-toggle-btn");
+let soundEnabled = (localStorage.getItem("kana-sound") || "on") === "on";
+let audioCtx = null;
+
+const ICON_SOUND_ON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+const ICON_SOUND_OFF = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+
+function updateSoundUI(){
+  soundToggleBtn.innerHTML = soundEnabled ? ICON_SOUND_ON : ICON_SOUND_OFF;
+  soundToggleBtn.title = soundEnabled ? "Mute sound FX" : "Enable sound FX";
+  soundToggleBtn.setAttribute("aria-label", soundToggleBtn.title);
+}
+soundToggleBtn.addEventListener("click", ()=>{
+  soundEnabled = !soundEnabled;
+  try { localStorage.setItem("kana-sound", soundEnabled ? "on" : "off"); } catch(e){}
+  updateSoundUI();
+  showToast(soundEnabled ? "Sound enabled" : "Sound muted", soundEnabled ? "🔊" : "🔇");
+});
+updateSoundUI();
+
+function playFX(type) {
+  if (!soundEnabled) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === "flip") {
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.04);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.start(now); osc.stop(now + 0.04);
+    } else if (type === "correct") {
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now); osc.stop(now + 0.22);
+    } else if (type === "incorrect") {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.linearRampToValueAtTime(110, now + 0.15);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.start(now); osc.stop(now + 0.15);
+    }
+  } catch(e){}
+}
+
+// ─── Toast System ────────────────────────────────────────────────
+const toastContainer = document.getElementById("toast-container");
+function showToast(message, icon = "") {
+  const toast = document.createElement("div");
+  toast.className = "toast-pill";
+  toast.innerHTML = `${icon ? `<span>${icon}</span>` : ''}<span>${message}</span>`;
+  toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    setTimeout(() => toast.remove(), 250);
+  }, 2200);
+}
+
+// ─── Confetti Fireworks Engine ────────────────────────────────────
+const confettiCanvas = document.getElementById("confetti-canvas");
+const ctx = confettiCanvas.getContext("2d");
+let confettiParticles = [];
+let confettiAnimationId = null;
+
+function resizeConfetti() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeConfetti);
+resizeConfetti();
+
+function triggerConfetti() {
+  const colors = ["#2ecc71", "#e74c3c", "#3498db", "#f1c40f", "#9b59b6", "#e67e22"];
+  for (let i = 0; i < 75; i++) {
+    confettiParticles.push({
+      x: confettiCanvas.width / 2 + (Math.random() * 80 - 40),
+      y: confettiCanvas.height / 2 + (Math.random() * 40 - 20),
+      vx: (Math.random() - 0.5) * 12,
+      vy: Math.random() * -12 - 4,
+      size: Math.random() * 7 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      rotation: Math.random() * Math.PI * 2,
+      vRot: (Math.random() - 0.5) * 0.2
+    });
+  }
+  if (!confettiAnimationId) animateConfetti();
+}
+
+function animateConfetti() {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiParticles.forEach((p, idx) => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.35;
+    p.alpha -= 0.015; p.rotation += p.vRot;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.alpha);
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+    ctx.restore();
+    if (p.alpha <= 0 || p.y > confettiCanvas.height) {
+      confettiParticles.splice(idx, 1);
+    }
+  });
+  if (confettiParticles.length > 0) {
+    confettiAnimationId = requestAnimationFrame(animateConfetti);
+  } else {
+    confettiAnimationId = null;
+  }
+}
+
+// ─── Keyboard Modal Handling ─────────────────────────────────────
+const kbdHelpBtn = document.getElementById("kbd-help-btn");
+const kbdPrompt = document.getElementById("kbd-prompt");
+const kbdCloseBtn = document.getElementById("kbd-close-btn");
+
+kbdHelpBtn.addEventListener("click", () => kbdPrompt.classList.add("visible"));
+kbdCloseBtn.addEventListener("click", () => kbdPrompt.classList.remove("visible"));
+kbdPrompt.addEventListener("click", (e) => {
+  if (e.target === kbdPrompt) kbdPrompt.classList.remove("visible");
+});
+
 // ─── State ───────────────────────────────────────────────────────
 const LOCAL_STORAGE_KEY = "kana-known-cards";
 
@@ -815,6 +895,8 @@ let currentUser=null, unsubSnapshot=null, syncEnabled=false;
 // Mode State & Quiz Engine
 let appMode = "learn"; // "learn" | "revision"
 let currentQuiz = null; // { options: [{text, isCorrect}], answered: false, selectedIndex: null }
+let revisionStreak = 0;
+let masteredDecks = new Set();
 
 const modeLearnBtn = document.getElementById("mode-learn-btn");
 const modeRevisionBtn = document.getElementById("mode-revision-btn");
@@ -853,12 +935,21 @@ function selectQuizOption(index) {
   
   const selectedOpt = currentQuiz.options[index];
   if (selectedOpt.isCorrect) {
+    revisionStreak++;
+    playFX("correct");
     const card = deck[idx];
     if (!known.has(card.c)) {
       known.add(card.c);
       saveKnown();
       celebrateKnown();
     }
+    if (revisionStreak > 0 && revisionStreak % 5 === 0) {
+      showToast(`${revisionStreak} Quiz Streak!`, "🔥");
+      triggerConfetti();
+    }
+  } else {
+    revisionStreak = 0;
+    playFX("incorrect");
   }
   render();
 }
@@ -882,7 +973,7 @@ function renderQuizUI() {
       const btn = document.createElement("button");
       btn.className = "quiz-option-btn";
       btn.type = "button";
-      btn.textContent = `${index + 1}. ${opt.text}`;
+      btn.innerHTML = `<span class="quiz-kbd-badge">${index + 1}</span> ${opt.text}`;
       
       if (currentQuiz.answered) {
         btn.disabled = true;
@@ -901,7 +992,7 @@ function renderQuizUI() {
     quizContainer.style.display = "none";
     learnBackContent.style.display = "flex";
     speakerBack.style.display = "flex";
-    backBadge.textContent = "Pronunciation";
+    backBadge.textContent = (script === "kanji" || KANJI_EMOJIS[deck[idx].c]) ? "Meaning & Reading" : "Pronunciation";
   }
 }
 
@@ -953,8 +1044,82 @@ const lpSkipBtn      = document.getElementById("lp-skip-btn");
 const resetPrompt      = document.getElementById("reset-prompt");
 const resetCancelBtn   = document.getElementById("reset-cancel-btn");
 const resetConfirmBtn  = document.getElementById("reset-confirm-btn");
+const resetModalTitle  = document.getElementById("reset-modal-title");
+const resetModalDesc   = document.getElementById("reset-modal-desc");
+const gridBtn            = document.getElementById("grid-btn");
+const gridPrompt         = document.getElementById("grid-prompt");
+const gridCloseBottomBtn = document.getElementById("grid-close-bottom-btn");
+const gridMatrix         = document.getElementById("grid-matrix");
+const gridModalTitle     = document.getElementById("grid-modal-title");
+const gridStatsLabel     = document.getElementById("grid-stats-label");
 
 // ─── Helpers ─────────────────────────────────────────────────────
+let gridFilterMode = "all";
+
+function renderGrid(){
+  const title = getDeckTitle();
+  gridModalTitle.textContent = `${title} Progress Chart`;
+  const knownInDeck = deck.filter(c => known.has(c.c)).length;
+  const kPct = Math.round((knownInDeck / deck.length) * 100);
+  gridStatsLabel.textContent = `✓ ${knownInDeck} / ${deck.length} Mastered (${kPct}%)`;
+
+  // Classic Gojūon 5-column set layout (A, K, S, T, N, H, M, Y, R, W)
+  gridMatrix.style.gridTemplateColumns = "repeat(5, 1fr)";
+
+  gridMatrix.innerHTML = "";
+  const showRomaji = appMode === "learn";
+  deck.forEach((card, index) => {
+    const isKnown = known.has(card.c);
+    if (gridFilterMode === "known" && !isKnown) return;
+    if (gridFilterMode === "unmastered" && isKnown) return;
+
+    const isCurrent = (index === idx);
+    const tile = document.createElement("div");
+    tile.className = `grid-tile ${isKnown ? "known" : ""} ${isCurrent ? "current-card" : ""}`;
+    
+    // Determine sub-label hint: Number numeral, Kanji English concept hint with Emoji, or Kana romaji
+    let subLabel = "";
+    if (card.n) {
+      subLabel = card.n;
+    } else if (script === "kanji" || KJ.some(k => k.c === card.c)) {
+      const emoji = KANJI_EMOJIS[card.c] || "💡";
+      const parts = card.r.split("·");
+      const meaning = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+      subLabel = `${emoji} ${meaning}`;
+    } else {
+      subLabel = card.r.split(',')[0];
+    }
+
+    tile.title = `${card.c}${showRomaji ? ` (${card.r.toUpperCase()})` : ''} - ${isKnown ? "Mastered" : "Unmastered"}${isCurrent ? " (Active Card)" : ""}`;
+    tile.innerHTML = `
+      ${isKnown ? '<span class="grid-tile-check">✓</span>' : ''}
+      <span class="grid-tile-char">${card.c}</span>
+      ${showRomaji ? `<span class="grid-tile-romaji">${subLabel}</span>` : ''}
+    `;
+    tile.addEventListener("click", () => {
+      idx = index;
+      flipped = false;
+      currentQuiz = null;
+      render();
+      gridPrompt.classList.remove("visible");
+      playFX("flip");
+    });
+    gridMatrix.appendChild(tile);
+  });
+}
+function getDeckTitle(){
+  if(script==="hiragana") return "Hiragana";
+  if(script==="katakana") return "Katakana";
+  if(script==="both") return "Hiragana & Katakana";
+  if(script==="numbers") return "Numbers";
+  if(script==="kanji") return "Kanji";
+  return "Deck";
+}
+function updateResetModalText(){
+  const title = getDeckTitle();
+  if(resetModalTitle) resetModalTitle.textContent = `Reset ${title} Progress?`;
+  if(resetModalDesc) resetModalDesc.textContent = `This will clear all marked "Known" cards in the ${title} deck. This action cannot be undone.`;
+}
 function shuffleArr(arr) {
   const a=[...arr];
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
@@ -1120,19 +1285,23 @@ googleLoginBtn.addEventListener("click", async ()=>{
 lpSkipBtn.addEventListener("click",()=>{ loginPrompt.classList.remove("visible"); });
 
 // ─── Render ──────────────────────────────────────────────────────
+const streakBadge = document.getElementById("streak-badge");
+const masteryBadge = document.getElementById("mastery-badge");
+
 function render(){
   const card=deck[idx];
   const col=(theme==="dark"?COLORS_DARK:COLORS_LIGHT)[script];
   document.body.style.background=`linear-gradient(135deg,${col.bg} 0%,${col.light} 100%)`;
   document.querySelector('meta[name="theme-color"]').content=col.bg;
 
+  const kanjiEmoji = KANJI_EMOJIS[card.c] ? ` ${KANJI_EMOJIS[card.c]}` : '';
   frontBadge.style.cssText=`background:${col.accent}20;color:${col.accent}`;
-  frontBadge.textContent = card.n ? "Numbers" : `${card.g} · ${scriptLabel(card.c)}`;
+  frontBadge.textContent = card.n ? "Numbers" : `${card.g} · ${scriptLabel(card.c)}${kanjiEmoji}`;
   frontChar.textContent=card.c;
   frontCheck.style.display=known.has(card.c)?"flex":"none";
 
   backChar.textContent=card.c;
-  romajiPill.textContent=card.r.toUpperCase();
+  romajiPill.textContent=`${card.r.toUpperCase()}${kanjiEmoji}`;
   romajiPill.style.background=col.accent;
 
   // Numeral badge (1, 10, 100, ...) sits next to the character on the
@@ -1146,6 +1315,7 @@ function render(){
     backNum.style.display="none";
   }
 
+  cardInner.style.transform = "";
   cardInner.classList.toggle("flipped",flipped);
   prevBtn.style.color=col.accent; nextBtn.style.color=col.accent;
   prevBtn.disabled=idx===0; nextBtn.disabled=idx===deck.length-1;
@@ -1163,6 +1333,24 @@ function render(){
   knownLbl.textContent=`✓ ${knownInDeck} known (${kPct}%)`;
   posBar.style.width=pct+"%"; knownBar.style.width=kPct+"%";
 
+  // Mastery badge & celebration trigger
+  const isMastered = knownInDeck === deck.length && deck.length > 0;
+  masteryBadge.style.display = isMastered ? "inline-flex" : "none";
+  if (isMastered && !masteredDecks.has(script)) {
+    masteredDecks.add(script);
+    triggerConfetti();
+    playFX("correct");
+    showToast(`${scriptLabel(deck[0].c)} Mastered! 🏆`, "🎉");
+  }
+
+  // Streak badge display
+  if (appMode === "revision" && revisionStreak > 0) {
+    streakBadge.style.display = "inline-flex";
+    streakBadge.textContent = `🔥 ${revisionStreak} streak`;
+  } else {
+    streakBadge.style.display = "none";
+  }
+
   tabBtns.forEach(b=>{
     const on=b.dataset.script===script;
     b.classList.toggle("active",on); b.style.color=on?col.accent:"";
@@ -1170,8 +1358,24 @@ function render(){
   shuffleBtn.classList.toggle("on",shuffled);
   shuffleBtn.style.color=shuffled?col.accent:"";
 
+  updateResetModalText();
   renderQuizUI();
 }
+
+// ─── Desktop 3D Parallax Tilt ────────────────────────────────────
+cardScene.addEventListener("mousemove", e => {
+  if (window.matchMedia("(hover: hover)").matches && !flipped && !animating) {
+    const rect = cardScene.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    cardInner.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg)`;
+  }
+});
+cardScene.addEventListener("mouseleave", () => {
+  if (!flipped) {
+    cardInner.style.transform = "";
+  }
+});
 
 // ─── Navigate ────────────────────────────────────────────────────
 function goTo(dir){
@@ -1215,7 +1419,7 @@ cardScene.addEventListener("touchend",e=>{
   const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty, dt=Date.now()-tt;
   if(dt<300&&Math.abs(dx)<10&&Math.abs(dy)<10){
     touchHandled=true; e.preventDefault();
-    flipped=!flipped;render();
+    flipped=!flipped; playFX("flip"); render();
   } else if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5&&dt<500){
     touchHandled=true; e.preventDefault();
     goTo(dx<0?1:-1);
@@ -1228,7 +1432,7 @@ cardScene.addEventListener("touchend",e=>{
 cardScene.addEventListener("click",e=>{
   if(e.target.closest(".speaker-btn") || e.target.closest(".quiz-container")) return;
   if(touchHandled){ touchHandled=false; return; }
-  flipped=!flipped;render();
+  flipped=!flipped; playFX("flip"); render();
 });
 prevBtn.addEventListener("click",()=>goTo(-1));
 nextBtn.addEventListener("click",()=>goTo(1));
@@ -1246,7 +1450,10 @@ markBtn.addEventListener("click",()=>{
   const nowKnown = !known.has(card.c);
   if(known.has(card.c)) known.delete(card.c); else known.add(card.c);
   render();
-  if(nowKnown) celebrateKnown();
+  if(nowKnown) {
+    celebrateKnown();
+    playFX("correct");
+  }
   saveKnown();
 
   if(!currentUser && !syncEnabled){
@@ -1257,21 +1464,49 @@ markBtn.addEventListener("click",()=>{
 shuffleBtn.addEventListener("click",()=>{
   shuffled=!shuffled; deck=buildDeck(script,shuffled);
   idx=0;flipped=false;currentQuiz=null;render();
+  showToast(shuffled ? "Deck shuffled 🔀" : "Original order restored");
 });
+
 resetBtn.addEventListener("click",()=>{
+  updateResetModalText();
   resetPrompt.classList.add("visible");
 });
 resetCancelBtn.addEventListener("click",()=>{
   resetPrompt.classList.remove("visible");
 });
+resetPrompt.addEventListener("click",(e)=>{
+  if(e.target === resetPrompt) resetPrompt.classList.remove("visible");
+});
 resetConfirmBtn.addEventListener("click",()=>{
   resetPrompt.classList.remove("visible");
-  idx=0;flipped=false;known=new Set();currentQuiz=null;
+  idx=0;flipped=false;known=new Set();currentQuiz=null;revisionStreak=0;masteredDecks.clear();
   deck=buildDeck(script,shuffled);
   saveLocalKnown();
   render();
+  showToast("Deck progress reset", "↺");
   if(currentUser) saveKnown();
 });
+
+// Grid Modal Listeners
+gridBtn.addEventListener("click", () => {
+  renderGrid();
+  gridPrompt.classList.add("visible");
+});
+gridCloseBottomBtn.addEventListener("click", () => gridPrompt.classList.remove("visible"));
+gridPrompt.addEventListener("click", (e) => {
+  if (e.target === gridPrompt) gridPrompt.classList.remove("visible");
+});
+
+const gridFilterPills = document.querySelectorAll(".grid-filter-pill");
+gridFilterPills.forEach(pill => {
+  pill.addEventListener("click", () => {
+    gridFilterPills.forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
+    gridFilterMode = pill.getAttribute("data-filter");
+    renderGrid();
+  });
+});
+
 window.addEventListener("storage", e => {
   if(e.key === LOCAL_STORAGE_KEY){
     known = loadLocalKnown();
@@ -1283,9 +1518,34 @@ tabBtns.forEach(b=>b.addEventListener("click",()=>{
   idx=0;flipped=false;currentQuiz=null;render();
 }));
 document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT" || e.target.tagName==="TEXTAREA") return;
+  if(e.key==="Escape"){
+    resetPrompt.classList.remove("visible");
+    kbdPrompt.classList.remove("visible");
+    loginPrompt.classList.remove("visible");
+    gridPrompt.classList.remove("visible");
+  }
   if(e.key==="ArrowRight")goTo(1);
   if(e.key==="ArrowLeft")goTo(-1);
-  if(e.key===" "||e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();flipped=!flipped;render();}
+  if(e.key===" "||e.key==="ArrowUp"||e.key==="ArrowDown"){
+    e.preventDefault();
+    flipped=!flipped;
+    playFX("flip");
+    render();
+  }
+  if(e.key.toLowerCase()==="k" || e.key.toLowerCase()==="m"){
+    markBtn.click();
+  }
+  if(e.key.toLowerCase()==="g"){
+    renderGrid();
+    gridPrompt.classList.toggle("visible");
+  }
+  if(e.key.toLowerCase()==="s"){
+    speak(deck[idx].c);
+  }
+  if(e.key==="?"){
+    kbdPrompt.classList.toggle("visible");
+  }
   if(appMode==="revision" && flipped && currentQuiz && !currentQuiz.answered){
     if(e.key==="1") selectQuizOption(0);
     if(e.key==="2") selectQuizOption(1);

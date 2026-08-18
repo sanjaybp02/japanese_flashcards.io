@@ -69,7 +69,15 @@ GitHub Actions workflow — no manual step needed there.
   - Kanji (42 foundational JLPT N5 chars with readings & meanings) — emerald green
 - **Learn vs. Revision Modes**:
   - **Learn Mode**: Standard study mode with card flip, hint prompts, romaji pill, and pronunciation speaker.
-  - **Revision Mode**: Distraction-free Midnight Focus theme (`#0f172a` slate gradient with cyan glow). Hides hints on card front. On flip, presents an interactive **3-choice multiple-choice quiz** (1 correct + 2 random distractors). Selecting correct turns green (`#2ecc71`) with pop animation and auto-marks known; selecting incorrect turns red (`#e74c3c`) with shake effect while highlighting correct answer. Supports keyboard selection (`1`, `2`, `3`).
+  - **Revision Mode**: Distraction-free Midnight Focus theme (`#0f172a` slate gradient with cyan glow). Hides hints on card front. On flip, presents an interactive **3-choice multiple-choice quiz** (1 correct + 2 random distractors). Selecting correct turns green (`#2ecc71`) with pop animation and auto-marks known; selecting incorrect turns red (`#e74c3c`) with shake effect while highlighting correct answer. Displays keyboard shortcut badges (`1`, `2`, `3`) on quiz options.
+- **Gamification & Mastery**:
+  - **HTML5 Canvas Confetti**: Particle fireworks burst upon reaching 100% deck mastery or achieving quiz streak milestones.
+  - **Mastery Status Badge**: Displays a glowing `🏆 Mastered` badge in the progress bar header when all cards in a deck are known.
+  - **Quiz Streak Counter**: Tracks live consecutive correct answers (`🔥 X streak`) in Revision Mode with celebratory toasts and confetti bursts.
+- **Web Audio FX Engine**: Synthesizes soft card flip clicks, correct/mark-known major-third chimes, and low incorrect tones using the Web Audio API (zero audio files). Header mute toggle (`🔊`/`🔇`) persisted in `localStorage` (`kana-sound`).
+- **Interactive Toast Notification System**: Floating glassmorphism toasts for action feedback (shuffled, reset, sound toggles, deck completion).
+- **Character Grid / Progress Chart Modal**: Clickable **"Grid 📊"** button in secondary controls (or key `G`) opening a visual character matrix of the active deck. Mastered cards are highlighted in vibrant green (`#2ecc71`) with checkmarks (`✓`). Clicking any character tile jumps directly to that flashcard.
+- **Desktop 3D Parallax Tilt**: Mouse-tracking perspective tilt (`rotateX`, `rotateY`) on desktop hover for tactile card depth.
 - **Dark mode**: toggle button (top-left), detects system preference on
   first visit, then remembers explicit choice via `localStorage`
   (`kana-theme` key). Inline pre-body script applies it before first paint
@@ -79,8 +87,7 @@ GitHub Actions workflow — no manual step needed there.
 - **Known-card tracking**, synced to Firestore per signed-in user.
   **Tracked by the actual character string, not array index** — this
   matters, see gotcha #2 below.
-- **Shuffle** / **Reset** (with a themed confirm modal, not the native
-  `confirm()`)
+- **Shuffle** / **Reset**: Themed confirmation modal for resetting progress with dynamic deck title (e.g. "Reset Hiragana Progress?"), click-outside-backdrop dismiss, and `Escape` hotkey dismissal.
 - **Pronunciation**: speaker icon on the card **back only** (intentional —
   keeps the front a genuine self-test), uses `speechSynthesis` with
   `lang: "ja-JP"`
@@ -178,6 +185,12 @@ GitHub Actions workflow — no manual step needed there.
     - **Signed-out to Signed-in Merge**: Logging in merges local offline cards with remote Firestore progress instead of overwriting local progress.
     - **Rapid Click & Snapshot Echo Protection**: Added `{ includeMetadataChanges: true }` and `hasPendingWrites` check to prevent local optimistic updates from being rolled back by snapshot echoes.
     - **Multi-Tab Syncing**: Added `storage` event listener so changes in one tab immediately update all open tabs on the same device.
+11. **Desktop 3D tilt inline style overriding CSS `.flipped` transform**:
+    - **Cause**: The mousemove 3D tilt event listener set `cardInner.style.transform = rotateY(...) rotateX(...)` as an inline CSS property on `.card-inner`, blocking `.card-inner.flipped`.
+    - **Fix**: Updated `render()` to reset `cardInner.style.transform = ""` prior to toggling `.flipped`, and updated the `mousemove` listener to ignore tilt calculations whenever `flipped` is true.
+12. **Revision Mode quiz option text invisible in Light Mode**:
+    - **Cause**: In Light Mode, `.card-face` had a white background (`#ffffff`), while `.quiz-option-btn` had hardcoded white text (`color: #fff;`) and translucent white background (`rgba(255,255,255,.06)`), rendering quiz options completely invisible on white card surfaces.
+    - **Fix**: Updated `.quiz-option-btn` to use theme-adaptive styling: slate-900 dark text on slate-50 background in Light Mode (`color: #0f172a; background: #f8fafc; border: 1.5px solid #cbd5e1;`), and high-contrast translucent white on dark slate in Dark Mode (`html[data-theme="dark"]`).
 
 ## Design decisions worth preserving
 
@@ -207,15 +220,13 @@ GitHub Actions workflow — no manual step needed there.
 
 ## Open / not done
 
-- Repo visibility (public vs. private) — discussed early on, no decision
-  made, never changed from public.
-- Kanji deck — built (42 foundational JLPT N5 Kanji cards added with readings, meanings, speech audio, and emerald theme).
+- Repo visibility (public vs. private) — discussed early on, no decision made, never changed from public.
+- Kanji deck — built (42 foundational JLPT N5 Kanji cards added with readings, meanings, visual emoji mnemonics, speech audio, and emerald theme).
+- Character Grid Progress Chart — built (interactive Gojūon 5-set matrix, real-time filtering pills `All/Mastered/Unmastered`, active card pulse indicator, mode-aware Romaji display, single bottom close button, single-slide 0 scroll).
+- Unified Glassmorphism Dark Theme — built (high-contrast dark slate `#111827` modals, glowing cyan `#38bdf8` key badges, bright white `#ffffff` headings & text across all popups).
 - Spaced repetition (SRS) — not built.
-- PWA/offline support — not built (there's a `manifest.json`/service-worker
-  gap; the meta tags for "add to home screen" exist but no actual PWA
-  manifest file).
-- Custom domain — discussed (would cost money), not pursued; current
-  domains are the free `.web.app` and `.github.io` ones.
+- PWA/offline support — not built (there's a `manifest.json`/service-worker gap; the meta tags for "add to home screen" exist but no actual PWA manifest file).
+- Custom domain — discussed (would cost money), not pursued; current domains are the free `.web.app` and `.github.io` ones.
 - `SECURITY.md` is still the unedited GitHub placeholder text.
 - `README.md` is still minimal (2 lines).
 
