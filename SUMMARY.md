@@ -191,6 +191,19 @@ GitHub Actions workflow — no manual step needed there.
 12. **Revision Mode quiz option text invisible in Light Mode**:
     - **Cause**: In Light Mode, `.card-face` had a white background (`#ffffff`), while `.quiz-option-btn` had hardcoded white text (`color: #fff;`) and translucent white background (`rgba(255,255,255,.06)`), rendering quiz options completely invisible on white card surfaces.
     - **Fix**: Updated `.quiz-option-btn` to use theme-adaptive styling: slate-900 dark text on slate-50 background in Light Mode (`color: #0f172a; background: #f8fafc; border: 1.5px solid #cbd5e1;`), and high-contrast translucent white on dark slate in Dark Mode (`html[data-theme="dark"]`).
+13. **Selective Deck Reset**:
+    - **Cause**: `resetConfirmBtn` cleared the global `known` Set (`known = new Set()`), accidentally wiping user progress across all 5 decks when attempting to reset a single deck.
+    - **Fix**: Updated reset confirmation handler to selectively delete only active deck cards (`deck.forEach(c => known.delete(c.c))`).
+14. **Mastery Toast & Unmastering Re-triggering**:
+    - **Cause**: Mastering the "Both" (Hiragana & Katakana) deck displayed "Hiragana Mastered!" due to `scriptLabel(deck[0].c)` usage; also, unmarking a card did not clear the script from `masteredDecks`, preventing future re-mastery celebrations.
+    - **Fix**: Updated toast to use `getDeckTitle()` and added `masteredDecks.delete(script)` when `!isMastered`.
+15. **Modal Keyboard Guarding & Revision Mode Audio Speech**:
+    - **Cause**: Keyboard hotkeys (`Space`, `Arrows`, `k`, `s`, `1-3`) still fired in the background when modal popups (Grid, Reset, Keyboard guide, Login) were open; pressing `s` on card front in Revision mode spoke the answer audio.
+    - **Fix**: Added `isModalOpen` guard check to `keydown` listener and restricted `s` speech audio hotkey in Revision mode to flipped cards only.
+16. **Character Grid Empty Filter State**:
+    - **Fix**: Added empty state indicator (`"No characters match the selected filter"`) when filtering grid tiles in Mastered/Unmastered view.
+17. **Automated Unit & Integration Test Suite (`tests/app.test.mjs`)**:
+    - Built a comprehensive test suite using Node's native test runner (`node --test tests/app.test.mjs`) covering card deck data integrity, distractor generation, selective reset, deck building, mastery calculations, multi-tab local sync, multi-device account mail sync, and shuffle state consistency (character-based tracking immunity, marking known while shuffled, remote sync arrival on shuffled deck, tab switching under shuffle, unshuffling restoration, and selective reset while shuffled). All 30 test cases pass cleanly.
 
 ## Design decisions worth preserving
 

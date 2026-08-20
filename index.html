@@ -1068,10 +1068,12 @@ function renderGrid(){
 
   gridMatrix.innerHTML = "";
   const showRomaji = appMode === "learn";
+  let renderedTiles = 0;
   deck.forEach((card, index) => {
     const isKnown = known.has(card.c);
     if (gridFilterMode === "known" && !isKnown) return;
     if (gridFilterMode === "unmastered" && isKnown) return;
+    renderedTiles++;
 
     const isCurrent = (index === idx);
     const tile = document.createElement("div");
@@ -1106,6 +1108,11 @@ function renderGrid(){
     });
     gridMatrix.appendChild(tile);
   });
+
+  if (renderedTiles === 0) {
+    gridMatrix.style.gridTemplateColumns = "1fr";
+    gridMatrix.innerHTML = `<div style="text-align:center; padding: 24px 12px; color: #94a3b8; font-size: 0.85rem; font-weight: 500;">No characters match the selected filter "${gridFilterMode}".</div>`;
+  }
 }
 function getDeckTitle(){
   if(script==="hiragana") return "Hiragana";
@@ -1336,11 +1343,15 @@ function render(){
   // Mastery badge & celebration trigger
   const isMastered = knownInDeck === deck.length && deck.length > 0;
   masteryBadge.style.display = isMastered ? "inline-flex" : "none";
-  if (isMastered && !masteredDecks.has(script)) {
-    masteredDecks.add(script);
-    triggerConfetti();
-    playFX("correct");
-    showToast(`${scriptLabel(deck[0].c)} Mastered! 🏆`, "🎉");
+  if (isMastered) {
+    if (!masteredDecks.has(script)) {
+      masteredDecks.add(script);
+      triggerConfetti();
+      playFX("correct");
+      showToast(`${getDeckTitle()} Mastered! 🏆`, "🎉");
+    }
+  } else {
+    masteredDecks.delete(script);
   }
 
   // Streak badge display
@@ -1479,11 +1490,13 @@ resetPrompt.addEventListener("click",(e)=>{
 });
 resetConfirmBtn.addEventListener("click",()=>{
   resetPrompt.classList.remove("visible");
-  idx=0;flipped=false;known=new Set();currentQuiz=null;revisionStreak=0;masteredDecks.clear();
+  idx=0;flipped=false;
+  deck.forEach(c => known.delete(c.c));
+  currentQuiz=null;revisionStreak=0;masteredDecks.delete(script);
   deck=buildDeck(script,shuffled);
   saveLocalKnown();
   render();
-  showToast("Deck progress reset", "↺");
+  showToast(`${getDeckTitle()} progress reset`, "↺");
   if(currentUser) saveKnown();
 });
 
@@ -1524,7 +1537,11 @@ document.addEventListener("keydown",e=>{
     kbdPrompt.classList.remove("visible");
     loginPrompt.classList.remove("visible");
     gridPrompt.classList.remove("visible");
+    return;
   }
+  const isModalOpen = document.querySelector(".login-prompt.visible") !== null;
+  if (isModalOpen) return;
+
   if(e.key==="ArrowRight")goTo(1);
   if(e.key==="ArrowLeft")goTo(-1);
   if(e.key===" "||e.key==="ArrowUp"||e.key==="ArrowDown"){
@@ -1541,7 +1558,9 @@ document.addEventListener("keydown",e=>{
     gridPrompt.classList.toggle("visible");
   }
   if(e.key.toLowerCase()==="s"){
-    speak(deck[idx].c);
+    if (appMode === "learn" || flipped) {
+      speak(deck[idx].c);
+    }
   }
   if(e.key==="?"){
     kbdPrompt.classList.toggle("visible");
